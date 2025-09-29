@@ -1,0 +1,135 @@
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { LenisProvider } from "@/components/providers/LenisProvider";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import Layout from "@/components/layout/Layout";
+import Index from "./pages/Index";
+import Properties from "./pages/Properties";
+import PropertyDetails from "./pages/PropertyDetails";
+import AddProperty from "./pages/AddProperty";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Profile from "./pages/Profile";
+import Favorites from "./pages/Favorites";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminActivities from "./pages/AdminActivities";
+import AdminFeedbacks from "./pages/AdminFeedbacks";
+import Unauthorized from "./pages/Unauthorized";
+import NotFound from "./pages/NotFound";
+
+const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <ThemeProvider>
+      <AuthProvider>
+        <LenisProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+              <Route path="/" element={<Layout />}>
+                {/* Public routes */}
+                <Route index element={<Index />} />
+                <Route path="properties" element={<Properties />} />
+                <Route path="properties/:id" element={<PropertyDetails />} />
+                
+                {/* Protected routes - require authentication */}
+                <Route
+                  path="add-property"
+                  element={
+                    <ProtectedRoute roles={['agent', 'admin']}>
+                      <AddProperty />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="add-property/:category"
+                  element={
+                    <ProtectedRoute roles={['agent', 'admin']}>
+                      <AddProperty />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route 
+                  path="favorites" 
+                  element={
+                    <ProtectedRoute>
+                      <Favorites />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="profile" 
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* Admin only routes */}
+                <Route
+                  path="admin"
+                  element={
+                    <ProtectedRoute roles={['admin']}>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="admin/activities"
+                  element={
+                    <ProtectedRoute roles={['admin']}>
+                      <AdminActivities />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="admin/feedbacks"
+                  element={
+                    <ProtectedRoute roles={['admin']}>
+                      <AdminFeedbacks />
+                    </ProtectedRoute>
+                  }
+                />
+              </Route>
+              
+              {/* Auth routes - redirect to home if already logged in */}
+              <Route 
+                path="login" 
+                element={
+                  <ProtectedRoute requireAuth={false}>
+                    <Login />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="register" 
+                element={
+                  <ProtectedRoute requireAuth={false}>
+                    <Register />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Error routes */}
+              <Route path="unauthorized" element={<Unauthorized />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </LenisProvider>
+      </AuthProvider>
+    </ThemeProvider>
+  </QueryClientProvider>
+);
+
+export default App;
