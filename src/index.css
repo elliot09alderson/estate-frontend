@@ -4,6 +4,11 @@
 
 /* Real Estate App Design System - Clean & Modern */
 
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
 @layer base {
   :root {
     /* Core Brand Colors - Professional Real Estate Palette */

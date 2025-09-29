@@ -5,9 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import { LenisProvider } from "@/components/providers/LenisProvider";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Layout from "@/components/layout/Layout";
+import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 import Index from "./pages/Index";
 import Properties from "./pages/Properties";
 import PropertyDetails from "./pages/PropertyDetails";
@@ -19,21 +19,27 @@ import Favorites from "./pages/Favorites";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminActivities from "./pages/AdminActivities";
 import AdminFeedbacks from "./pages/AdminFeedbacks";
+import AdminPropertyRequirements from "./pages/AdminPropertyRequirements";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const AppWithScroll = () => {
+  useSmoothScroll();
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <AuthProvider>
-        <LenisProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
+        <TooltipProvider>
+          <AppWithScroll />
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
               <Route path="/" element={<Layout />}>
                 {/* Public routes */}
                 <Route index element={<Index />} />
@@ -99,6 +105,14 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="admin/property-requirements"
+                  element={
+                    <ProtectedRoute roles={['admin']}>
+                      <AdminPropertyRequirements />
+                    </ProtectedRoute>
+                  }
+                />
               </Route>
               
               {/* Auth routes - redirect to home if already logged in */}
@@ -126,7 +140,6 @@ const App = () => (
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
-      </LenisProvider>
       </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>

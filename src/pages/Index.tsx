@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  Search, 
-  MapPin, 
-  Home, 
-  Users, 
-  Shield, 
+import {
+  Search,
+  MapPin,
+  Home,
+  Users,
+  Shield,
   Star,
   ArrowRight,
   Building,
@@ -19,6 +19,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import propertyRequirementService, { PropertyRequirement } from '@/services/propertyRequirementService';
 
 // Mock featured properties
 const featuredProperties = [
@@ -56,6 +58,78 @@ const featuredProperties = [
 ];
 
 const Index = () => {
+  const [propertyType, setPropertyType] = useState('');
+  const [formData, setFormData] = useState<Partial<PropertyRequirement>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  const handleInputChange = (field: keyof PropertyRequirement, value: string | number) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.name || !formData.email || !formData.phone) {
+      toast({
+        title: 'Required fields missing',
+        description: 'Please fill in your name, email, and phone number.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Clean the data - remove undefined values and irrelevant fields
+      const cleanData: Partial<PropertyRequirement> = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone
+      };
+
+      // Add property type if selected
+      if (propertyType) {
+        cleanData.propertyType = propertyType as PropertyRequirement['propertyType'];
+      }
+
+      // Add other fields only if they have values
+      if (formData.budgetRange) cleanData.budgetRange = formData.budgetRange;
+      if (formData.preferredLocation) cleanData.preferredLocation = formData.preferredLocation;
+      if (formData.minSize && formData.minSize > 0) cleanData.minSize = formData.minSize;
+      if (formData.additionalRequirements) cleanData.additionalRequirements = formData.additionalRequirements;
+
+      // Only add bedrooms/bathrooms for apartment and house types
+      if (propertyType === 'apartment' || propertyType === 'house') {
+        if (formData.bedrooms && formData.bedrooms > 0) cleanData.bedrooms = formData.bedrooms;
+        if (formData.bathrooms && formData.bathrooms > 0) cleanData.bathrooms = formData.bathrooms;
+      }
+
+      await propertyRequirementService.createRequirement(cleanData as PropertyRequirement);
+
+      toast({
+        title: 'Success!',
+        description: 'Your property requirement has been submitted. We will contact you soon.',
+      });
+
+      // Reset form
+      setFormData({});
+      setPropertyType('');
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to submit your request. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background">
       {/* Hero Section */}
@@ -314,8 +388,186 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Want Property Form Section */}
       <section className="py-20 px-4">
+        <div className="container mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="max-w-3xl mx-auto"
+          >
+            <Card className="card-elevated p-8">
+              <div className="text-center mb-8">
+                <h2 className="text-4xl font-bold mb-4">Looking for a Specific Property?</h2>
+                <p className="text-xl text-muted-foreground">
+                  Tell us what you're looking for and we'll help you find it
+                </p>
+              </div>
+
+              <form className="space-y-6" onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Property Type</label>
+                    <select
+                      className="w-full h-12 px-4 rounded-md border border-input bg-background"
+                      value={propertyType}
+                      onChange={(e) => {
+                        const newType = e.target.value;
+                        setPropertyType(newType);
+
+                        // Clear bedroom/bathroom data when switching to land/commercial
+                        if (newType === 'land' || newType === 'commercial') {
+                          setFormData(prev => ({
+                            ...prev,
+                            bedrooms: undefined,
+                            bathrooms: undefined
+                          }));
+                        }
+                      }}
+                    >
+                      <option value="">Select Type</option>
+                      <option value="apartment">Apartment</option>
+                      <option value="house">House</option>
+                      <option value="commercial">Commercial</option>
+                      <option value="land">Land</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Budget Range</label>
+                    <select
+                      className="w-full h-12 px-4 rounded-md border border-input bg-background"
+                      value={formData.budgetRange || ''}
+                      onChange={(e) => handleInputChange('budgetRange', e.target.value)}
+                    >
+                      <option value="">Select Budget</option>
+                      <option value="0-10L">₹0 - ₹10 Lakhs</option>
+                      <option value="10L-25L">₹10 Lakhs - ₹25 Lakhs</option>
+                      <option value="25L-50L">₹25 Lakhs - ₹50 Lakhs</option>
+                      <option value="50L-1Cr">₹50 Lakhs - ₹1 Crore</option>
+                      <option value="1Cr-2Cr">₹1 Crore - ₹2 Crores</option>
+                      <option value="2Cr+">₹2 Crores+</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Preferred Location</label>
+                    <Input
+                      placeholder="City, neighborhood, or area"
+                      className="h-12"
+                      value={formData.preferredLocation || ''}
+                      onChange={(e) => handleInputChange('preferredLocation', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Size (sqft)</label>
+                    <Input
+                      type="number"
+                      placeholder="Minimum size"
+                      className="h-12"
+                      value={formData.minSize || ''}
+                      onChange={(e) => handleInputChange('minSize', parseInt(e.target.value) || 0)}
+                    />
+                  </div>
+                </div>
+
+                {propertyType !== 'land' && propertyType !== 'commercial' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Bedrooms</label>
+                      <select
+                        className="w-full h-12 px-4 rounded-md border border-input bg-background"
+                        value={formData.bedrooms || ''}
+                        onChange={(e) => handleInputChange('bedrooms', parseInt(e.target.value) || 0)}
+                      >
+                        <option value="">Any</option>
+                        <option value="1">1+</option>
+                        <option value="2">2+</option>
+                        <option value="3">3+</option>
+                        <option value="4">4+</option>
+                        <option value="5">5+</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Bathrooms</label>
+                      <select
+                        className="w-full h-12 px-4 rounded-md border border-input bg-background"
+                        value={formData.bathrooms || ''}
+                        onChange={(e) => handleInputChange('bathrooms', parseInt(e.target.value) || 0)}
+                      >
+                        <option value="">Any</option>
+                        <option value="1">1+</option>
+                        <option value="2">2+</option>
+                        <option value="3">3+</option>
+                        <option value="4">4+</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Additional Requirements</label>
+                  <textarea
+                    className="w-full p-4 rounded-md border border-input bg-background min-h-[100px]"
+                    placeholder="Tell us more about what you're looking for (e.g., parking, garden, near schools, etc.)"
+                    value={formData.additionalRequirements || ''}
+                    onChange={(e) => handleInputChange('additionalRequirements', e.target.value)}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Your Name</label>
+                    <Input
+                      placeholder="Enter your full name"
+                      className="h-12"
+                      value={formData.name || ''}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Email Address</label>
+                    <Input
+                      type="email"
+                      placeholder="Enter your email"
+                      className="h-12"
+                      value={formData.email || ''}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Phone Number</label>
+                  <Input
+                    type="tel"
+                    placeholder="Enter your phone number"
+                    className="h-12"
+                    value={formData.phone || ''}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="flex justify-center">
+                  <Button type="submit" size="lg" className="btn-gradient-primary px-8" disabled={isSubmitting}>
+                    {isSubmitting ? 'Submitting...' : 'Submit Property Request'}
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </Button>
+                </div>
+              </form>
+            </Card>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 px-4 bg-secondary/30">
         <div className="container mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -345,6 +597,7 @@ const Index = () => {
           </motion.div>
         </div>
       </section>
+
     </div>
   );
 };

@@ -1,19 +1,21 @@
 import { useEffect, useRef } from 'react';
-import Lenis from 'lenis';
+import Lenis from '@studio-freight/lenis';
 
 export const useLenis = () => {
   const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      duration: 0.8,
+      easing: (t) => 1 - Math.pow(1 - t, 3),
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
       wheelMultiplier: 1,
-      touchMultiplier: 2,
+      touchMultiplier: 1.5,
       infinite: false,
+      lerp: 0.1,
+      smoothTouch: false,
     });
 
     lenisRef.current = lenis;

@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useRef, createContext, useContext } from 'react';
-import Lenis from 'lenis';
+import Lenis from '@studio-freight/lenis';
 
 interface LenisContextValue {
   lenis: Lenis | null;
@@ -18,14 +18,8 @@ export const LenisProvider = ({ children }: LenisProviderProps) => {
 
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: 'vertical',
-      gestureOrientation: 'vertical',
-      smoothWheel: true,
-      wheelMultiplier: 1,
-      touchMultiplier: 2,
-      infinite: false,
+      smooth: true,
+      lerp: 0.1,
     });
 
     lenisRef.current = lenis;
@@ -37,23 +31,9 @@ export const LenisProvider = ({ children }: LenisProviderProps) => {
 
     requestAnimationFrame(raf);
 
-    const handleHashChange = () => {
-      const hash = window.location.hash;
-      if (hash) {
-        const element = document.querySelector(hash);
-        if (element) {
-          lenis.scrollTo(element, { offset: 0 });
-        }
-      }
-    };
-
-    window.addEventListener('hashchange', handleHashChange);
-    handleHashChange();
-
     return () => {
       lenis.destroy();
       lenisRef.current = null;
-      window.removeEventListener('hashchange', handleHashChange);
     };
   }, []);
 

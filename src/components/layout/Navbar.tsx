@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 import { 
   Home, 
   Heart, 
@@ -30,6 +31,7 @@ const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
@@ -60,16 +62,26 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className="flex items-center space-x-2 px-3 py-2 rounded-lg text-foreground/80 hover:text-foreground hover:bg-secondary/50 transition-all duration-200"
-              >
-                <item.icon className="w-4 h-4" />
-                <span>{item.name}</span>
-              </Link>
-            ))}
+            {navigation.map((item) => {
+              const isActive = location.pathname === item.href ||
+                              (item.href !== '/' && location.pathname.startsWith(item.href));
+
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={cn(
+                    "flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200",
+                    isActive
+                      ? "bg-primary text-primary-foreground font-medium"
+                      : "text-foreground/80 hover:text-foreground hover:bg-secondary/50"
+                  )}
+                >
+                  <item.icon className="w-4 h-4" />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
           </div>
 
           {/* Right Section */}
@@ -152,17 +164,27 @@ const Navbar = () => {
             className="md:hidden py-4 border-t border-border"
           >
             <div className="flex flex-col space-y-2">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center space-x-2 px-4 py-3 rounded-lg text-foreground/80 hover:text-foreground hover:bg-secondary/50 transition-all duration-200"
-                >
-                  <item.icon className="w-4 h-4" />
-                  <span>{item.name}</span>
-                </Link>
-              ))}
+              {navigation.map((item) => {
+                const isActive = location.pathname === item.href ||
+                                (item.href !== '/' && location.pathname.startsWith(item.href));
+
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={cn(
+                      "flex items-center space-x-2 px-4 py-3 rounded-lg transition-all duration-200",
+                      isActive
+                        ? "bg-primary text-primary-foreground font-medium"
+                        : "text-foreground/80 hover:text-foreground hover:bg-secondary/50"
+                    )}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    <span>{item.name}</span>
+                  </Link>
+                );
+              })}
             </div>
           </motion.div>
         )}

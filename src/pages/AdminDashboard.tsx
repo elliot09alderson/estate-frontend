@@ -15,7 +15,8 @@ import {
   Trash2,
   AlertCircle,
   MessageSquare,
-  Ban
+  Ban,
+  FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -243,6 +244,12 @@ const AdminDashboard = () => {
               <Button variant="outline">
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Feedbacks
+              </Button>
+            </Link>
+            <Link to="/admin/property-requirements">
+              <Button variant="outline">
+                <FileText className="w-4 h-4 mr-2" />
+                Property Requirements
               </Button>
             </Link>
           </div>
