@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import MobileSelect from '@/components/MobileSelect';
 import { useGetActivitiesQuery } from '@/hooks/useAdaptedApi';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -100,25 +101,27 @@ const AdminActivities = () => {
             <h3 className="text-lg font-semibold">Recent Activities</h3>
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-muted-foreground" />
-              <select
-                className="p-2 border rounded-lg text-sm"
+              <MobileSelect
                 value={actionFilter}
-                onChange={(e) => {
-                  setActionFilter(e.target.value);
+                onValueChange={(value) => {
+                  setActionFilter(value);
                   setPage(1);
                 }}
-              >
-                <option value="">All Actions</option>
-                <option value="approved_property">Approved Property</option>
-                <option value="rejected_property">Rejected Property</option>
-                <option value="deleted_property">Deleted Property</option>
-                <option value="deactivated_agent">Deactivated Agent</option>
-                <option value="activated_agent">Activated Agent</option>
-                <option value="blocked_user">Blocked User</option>
-                <option value="unblocked_user">Unblocked User</option>
-                <option value="deleted_user">Deleted User</option>
-                <option value="responded_feedback">Responded Feedback</option>
-              </select>
+                placeholder="All Actions"
+                options={[
+                  { value: "", label: "All Actions" },
+                  { value: "approved_property", label: "Approved Property" },
+                  { value: "rejected_property", label: "Rejected Property" },
+                  { value: "deleted_property", label: "Deleted Property" },
+                  { value: "deactivated_agent", label: "Deactivated Agent" },
+                  { value: "activated_agent", label: "Activated Agent" },
+                  { value: "blocked_user", label: "Blocked User" },
+                  { value: "unblocked_user", label: "Unblocked User" },
+                  { value: "deleted_user", label: "Deleted User" },
+                  { value: "responded_feedback", label: "Responded Feedback" }
+                ]}
+                className="w-48"
+              />
             </div>
           </div>
 

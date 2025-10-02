@@ -264,6 +264,26 @@ html {
     display: none;  /* Chrome, Safari and Opera */
   }
 
+  /* Mobile Touch Optimizations */
+  @media (max-width: 768px) {
+    /* Improve touch targets */
+    button, input, select, textarea {
+      min-height: 44px;
+      touch-action: manipulation;
+    }
+
+    /* Prevent zoom on input focus */
+    input[type="text"], input[type="email"], input[type="number"], input[type="tel"], textarea, select {
+      font-size: 16px;
+    }
+
+    /* Improve button press feedback */
+    button:active {
+      transform: scale(0.98);
+      opacity: 0.8;
+    }
+  }
+
   /* Fix select dropdown positioning */
   select {
     position: relative;
@@ -272,6 +292,25 @@ html {
 
   select option {
     position: relative;
+  }
+
+  /* Prevent horizontal overflow */
+  * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Improve viewport handling */
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  /* Fix iOS Safari viewport issues */
+  @supports (-webkit-touch-callout: none) {
+    .min-h-screen {
+      min-height: -webkit-fill-available;
+    }
   }
 }
 

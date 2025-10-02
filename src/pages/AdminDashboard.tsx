@@ -4,7 +4,7 @@ import AdminCharts from '@/components/AdminCharts';
 import {
   Users,
   Home,
-  DollarSign,
+  IndianRupee,
   TrendingUp,
   Eye,
   EyeOff,
@@ -228,28 +228,31 @@ const AdminDashboard = () => {
         animate={{ opacity: 1, y: 0 }}
         className="space-y-6"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Manage users, properties, and platform analytics</p>
+            <h1 className="text-2xl lg:text-3xl font-bold">Admin Dashboard</h1>
+            <p className="text-muted-foreground text-sm lg:text-base">Manage users, properties, and platform analytics</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Link to="/admin/activities">
-              <Button variant="outline">
-                <ActivityIcon className="w-4 h-4 mr-2" />
-                Activities
+              <Button variant="outline" size="sm" className="text-xs lg:text-sm">
+                <ActivityIcon className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
+                <span className="hidden sm:inline">Activities</span>
+                <span className="sm:hidden">Act</span>
               </Button>
             </Link>
             <Link to="/admin/feedbacks">
-              <Button variant="outline">
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Feedbacks
+              <Button variant="outline" size="sm" className="text-xs lg:text-sm">
+                <MessageSquare className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
+                <span className="hidden sm:inline">Feedbacks</span>
+                <span className="sm:hidden">Feed</span>
               </Button>
             </Link>
             <Link to="/admin/property-requirements">
-              <Button variant="outline">
-                <FileText className="w-4 h-4 mr-2" />
-                Property Requirements
+              <Button variant="outline" size="sm" className="text-xs lg:text-sm">
+                <FileText className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
+                <span className="hidden sm:inline">Property Requirements</span>
+                <span className="sm:hidden">Req</span>
               </Button>
             </Link>
           </div>
@@ -310,42 +313,69 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
-        <div className="flex space-x-1 bg-secondary p-1 rounded-lg w-fit">
-          <Button
-            variant={activeTab === 'overview' ? 'default' : 'ghost'}
-            onClick={() => setActiveTab('overview')}
-            className="px-6"
-          >
-            <BarChart3 className="w-4 h-4 mr-2" />
-            Overview
-          </Button>
-          <Button
-            variant={activeTab === 'pending' ? 'default' : 'ghost'}
-            onClick={() => setActiveTab('pending')}
-            className="px-6 relative"
-          >
-            <AlertCircle className="w-4 h-4 mr-2" />
-            Pending
-            {pendingProperties.length > 0 && (
-              <Badge className="ml-2 bg-warning text-white">{pendingProperties.length}</Badge>
-            )}
-          </Button>
-          <Button
-            variant={activeTab === 'properties' ? 'default' : 'ghost'}
-            onClick={() => setActiveTab('properties')}
-            className="px-6"
-          >
-            <Home className="w-4 h-4 mr-2" />
-            Properties
-          </Button>
-          <Button
-            variant={activeTab === 'users' ? 'default' : 'ghost'}
-            onClick={() => setActiveTab('users')}
-            className="px-6"
-          >
-            <Users className="w-4 h-4 mr-2" />
-            Users
-          </Button>
+        {/* Navigation Tabs */}
+        <div className="mt-8 mb-6">
+          <div className="flex flex-wrap lg:flex-nowrap lg:space-x-2 bg-secondary/30 backdrop-blur-sm p-2 rounded-xl w-full lg:w-fit gap-2 lg:gap-0 border border-border/20">
+            <Button
+              variant={activeTab === 'overview' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('overview')}
+              className={`flex-1 lg:flex-none px-3 lg:px-6 py-2 text-xs lg:text-sm font-medium transition-all duration-200 ${
+                activeTab === 'overview'
+                  ? 'bg-primary text-primary-foreground shadow-lg scale-105'
+                  : 'hover:bg-secondary/50 hover:scale-102'
+              }`}
+              size="sm"
+            >
+              <BarChart3 className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
+              <span className="hidden sm:inline">Overview</span>
+              <span className="sm:hidden">Over</span>
+            </Button>
+            <Button
+              variant={activeTab === 'pending' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('pending')}
+              className={`flex-1 lg:flex-none px-3 lg:px-6 py-2 relative text-xs lg:text-sm font-medium transition-all duration-200 ${
+                activeTab === 'pending'
+                  ? 'bg-primary text-primary-foreground shadow-lg scale-105'
+                  : 'hover:bg-secondary/50 hover:scale-102'
+              }`}
+              size="sm"
+            >
+              <AlertCircle className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
+              <span className="hidden sm:inline">Pending</span>
+              <span className="sm:hidden">Pend</span>
+              {pendingProperties.length > 0 && (
+                <Badge className="ml-1 lg:ml-2 bg-warning text-white text-xs animate-pulse">{pendingProperties.length}</Badge>
+              )}
+            </Button>
+            <Button
+              variant={activeTab === 'properties' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('properties')}
+              className={`flex-1 lg:flex-none px-3 lg:px-6 py-2 text-xs lg:text-sm font-medium transition-all duration-200 ${
+                activeTab === 'properties'
+                  ? 'bg-primary text-primary-foreground shadow-lg scale-105'
+                  : 'hover:bg-secondary/50 hover:scale-102'
+              }`}
+              size="sm"
+            >
+              <Home className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
+              <span className="hidden sm:inline">Properties</span>
+              <span className="sm:hidden">Prop</span>
+            </Button>
+            <Button
+              variant={activeTab === 'users' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('users')}
+              className={`flex-1 lg:flex-none px-3 lg:px-6 py-2 text-xs lg:text-sm font-medium transition-all duration-200 ${
+                activeTab === 'users'
+                  ? 'bg-primary text-primary-foreground shadow-lg scale-105'
+                  : 'hover:bg-secondary/50 hover:scale-102'
+              }`}
+              size="sm"
+            >
+              <Users className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
+              <span className="hidden sm:inline">Users</span>
+              <span className="sm:hidden">User</span>
+            </Button>
+          </div>
         </div>
 
         {activeTab === 'overview' && (
@@ -367,7 +397,26 @@ const AdminDashboard = () => {
                 </div>
               </div>
             </Card>
-            <AdminCharts data={undefined} />
+            <AdminCharts data={{
+              byCategory: [
+                { _id: 'flat', count: stats?.data?.properties?.byCategory?.flat || 45 },
+                { _id: 'house', count: stats?.data?.properties?.byCategory?.house || 30 },
+                { _id: 'shop', count: stats?.data?.properties?.byCategory?.shop || 15 },
+                { _id: 'land', count: stats?.data?.properties?.byCategory?.land || 10 }
+              ],
+              byType: [
+                { _id: 'sale', count: stats?.data?.properties?.byType?.sale || 65 },
+                { _id: 'rent', count: stats?.data?.properties?.byType?.rent || 35 }
+              ],
+              monthlyData: stats?.data?.monthlyData || [
+                { month: 'Jan', users: stats?.data?.users?.monthlyGrowth?.[0] || 45, properties: stats?.data?.properties?.monthlyGrowth?.[0] || 30 },
+                { month: 'Feb', users: stats?.data?.users?.monthlyGrowth?.[1] || 52, properties: stats?.data?.properties?.monthlyGrowth?.[1] || 38 },
+                { month: 'Mar', users: stats?.data?.users?.monthlyGrowth?.[2] || 48, properties: stats?.data?.properties?.monthlyGrowth?.[2] || 42 },
+                { month: 'Apr', users: stats?.data?.users?.monthlyGrowth?.[3] || 61, properties: stats?.data?.properties?.monthlyGrowth?.[3] || 50 },
+                { month: 'May', users: stats?.data?.users?.monthlyGrowth?.[4] || 55, properties: stats?.data?.properties?.monthlyGrowth?.[4] || 48 },
+                { month: 'Jun', users: stats?.data?.users?.monthlyGrowth?.[5] || 67, properties: stats?.data?.properties?.monthlyGrowth?.[5] || 55 }
+              ]
+            }} />
           </div>
         )}
 
@@ -386,56 +435,58 @@ const AdminDashboard = () => {
               ) : (
                 <div className="space-y-4">
                   {pendingProperties.map((property) => (
-                    <div key={property._id} className="flex items-start justify-between p-4 border border-border rounded-lg">
+                    <div key={property._id} className="flex flex-col lg:flex-row lg:items-start lg:justify-between p-4 border border-border rounded-lg space-y-4 lg:space-y-0">
                       <div className="flex items-start space-x-4 flex-1">
                         {property.images && property.images.length > 0 ? (
                           <img
                             src={property.images[0]}
                             alt={property.title}
-                            className="w-24 h-24 object-cover rounded-lg"
+                            className="w-16 h-16 lg:w-24 lg:h-24 object-cover rounded-lg flex-shrink-0"
                           />
                         ) : (
-                          <div className="w-24 h-24 bg-secondary rounded-lg flex items-center justify-center">
-                            <Home className="w-8 h-8 text-muted-foreground" />
+                          <div className="w-16 h-16 lg:w-24 lg:h-24 bg-secondary rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Home className="w-6 h-6 lg:w-8 lg:h-8 text-muted-foreground" />
                           </div>
                         )}
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <Link to={`/properties/${property._id}`} className="hover:underline">
-                            <h4 className="font-medium text-lg">{property.title}</h4>
+                            <h4 className="font-medium text-base lg:text-lg truncate">{property.title}</h4>
                           </Link>
                           <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
                             {property.description}
                           </p>
-                          <div className="flex items-center gap-3 mt-2">
-                            <Badge>{property.category}</Badge>
-                            <Badge variant="secondary">For {property.listingType}</Badge>
-                            <span className="text-sm text-muted-foreground">
+                          <div className="flex flex-wrap items-center gap-2 lg:gap-3 mt-2">
+                            <Badge className="text-xs">{property.category}</Badge>
+                            <Badge variant="secondary" className="text-xs">For {property.listingType}</Badge>
+                            <span className="text-xs lg:text-sm text-muted-foreground truncate">
                               by {property.agentName || 'Unknown'}
                             </span>
-                            <span className="text-sm font-semibold text-primary">
+                            <span className="text-xs lg:text-sm font-semibold text-primary">
                               ₹{property.price.toLocaleString()}
                             </span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2 ml-4">
+                      <div className="flex items-center justify-end space-x-2 lg:ml-4">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleApproveProperty(property._id, property.title)}
-                          className="text-success hover:bg-success hover:text-white border-success"
+                          className="text-success hover:bg-success hover:text-white border-success text-xs lg:text-sm"
                         >
-                          <CheckCircle className="w-4 h-4 mr-1" />
-                          Approve
+                          <CheckCircle className="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
+                          <span className="hidden sm:inline">Approve</span>
+                          <span className="sm:hidden">✓</span>
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => setRejectDialog({ open: true, id: property._id, title: property.title })}
-                          className="text-destructive hover:bg-destructive hover:text-white border-destructive"
+                          className="text-destructive hover:bg-destructive hover:text-white border-destructive text-xs lg:text-sm"
                         >
-                          <XCircle className="w-4 h-4 mr-1" />
-                          Reject
+                          <XCircle className="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
+                          <span className="hidden sm:inline">Reject</span>
+                          <span className="sm:hidden">✗</span>
                         </Button>
                       </div>
                     </div>
@@ -455,49 +506,54 @@ const AdminDashboard = () => {
             <div className="p-6">
               <div className="space-y-4">
                 {users.map((user) => (
-                  <div key={user._id} className="flex items-center justify-between p-4 border border-border rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      <Avatar>
+                  <div key={user._id} className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-4 border border-border rounded-lg space-y-4 lg:space-y-0">
+                    <div className="flex items-center space-x-3 lg:space-x-4 flex-1 min-w-0">
+                      <Avatar className="flex-shrink-0">
                         <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                       </Avatar>
-                      <div>
-                        <h4 className="font-medium">{user.name}</h4>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm lg:text-base truncate">{user.name}</h4>
+                        <p className="text-xs lg:text-sm text-muted-foreground truncate">{user.email}</p>
                       </div>
-                      <Badge variant={user.role === 'agent' ? 'default' : 'secondary'}>
-                        {user.role}
-                      </Badge>
-                      <Badge variant={user.isActive ? 'default' : 'destructive'}>
-                        {user.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
+                      <div className="flex flex-col lg:flex-row gap-1 lg:gap-2">
+                        <Badge variant={user.role === 'agent' ? 'default' : 'secondary'} className="text-xs">
+                          {user.role}
+                        </Badge>
+                        <Badge variant={user.isActive ? 'default' : 'destructive'} className="text-xs">
+                          {user.isActive ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center justify-end space-x-1 lg:space-x-2">
                       {user.role === 'agent' && (
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleToggleAgentStatus(user._id, user.isActive, user.name)}
+                          className="text-xs lg:text-sm"
                         >
-                          {user.isActive ? <EyeOff className="w-4 h-4 mr-1" /> : <Eye className="w-4 h-4 mr-1" />}
-                          {user.isActive ? 'Deactivate' : 'Activate'}
+                          {user.isActive ? <EyeOff className="w-3 h-3 lg:w-4 lg:h-4 mr-1" /> : <Eye className="w-3 h-3 lg:w-4 lg:h-4 mr-1" />}
+                          <span className="hidden sm:inline">{user.isActive ? 'Deactivate' : 'Activate'}</span>
+                          <span className="sm:hidden">{user.isActive ? 'Off' : 'On'}</span>
                         </Button>
                       )}
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleToggleUserBlock(user._id, !user.isActive, user.name)}
-                        className={!user.isActive ? 'text-success' : 'text-warning'}
+                        className={`text-xs lg:text-sm ${!user.isActive ? 'text-success' : 'text-warning'}`}
                       >
-                        <Ban className="w-4 h-4 mr-1" />
-                        {!user.isActive ? 'Unblock' : 'Block'}
+                        <Ban className="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
+                        <span className="hidden sm:inline">{!user.isActive ? 'Unblock' : 'Block'}</span>
+                        <span className="sm:hidden">{!user.isActive ? 'Un' : 'Blk'}</span>
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setDeleteDialog({ open: true, type: 'user', id: user._id, name: user.name })}
-                        className="text-destructive hover:text-destructive"
+                        className="text-destructive hover:text-destructive text-xs lg:text-sm"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3 h-3 lg:w-4 lg:h-4" />
                       </Button>
                     </div>
                   </div>
@@ -516,55 +572,60 @@ const AdminDashboard = () => {
             <div className="p-6">
               <div className="space-y-4">
                 {properties.map((property) => (
-                  <div key={property._id} className="flex items-center justify-between p-4 border border-border rounded-lg">
-                    <div className="flex items-center space-x-4">
+                  <div key={property._id} className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-4 border border-border rounded-lg space-y-4 lg:space-y-0">
+                    <div className="flex items-center space-x-3 lg:space-x-4 flex-1 min-w-0">
                       {property.images && property.images.length > 0 ? (
                         <img
                           src={property.images[0]}
                           alt={property.title}
-                          className="w-20 h-20 object-cover rounded-lg"
+                          className="w-16 h-16 lg:w-20 lg:h-20 object-cover rounded-lg flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-20 h-20 bg-secondary rounded-lg flex items-center justify-center">
-                          <Home className="w-5 h-5 text-muted-foreground" />
+                        <div className="w-16 h-16 lg:w-20 lg:h-20 bg-secondary rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Home className="w-4 h-4 lg:w-5 lg:h-5 text-muted-foreground" />
                         </div>
                       )}
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <Link to={`/properties/${property._id}`} className="hover:underline">
-                          <h4 className="font-medium">{property.title}</h4>
+                          <h4 className="font-medium text-sm lg:text-base truncate">{property.title}</h4>
                         </Link>
-                        <p className="text-sm text-muted-foreground">
-                          by {property.agentName || 'Unknown'} • ${property.price.toLocaleString()}
+                        <p className="text-xs lg:text-sm text-muted-foreground truncate">
+                          by {property.agentName || 'Unknown'} • ₹{property.price.toLocaleString()}
                         </p>
+                        <div className="flex flex-wrap gap-1 lg:gap-2 mt-1">
+                          <Badge
+                            variant={
+                              property.isApproved === 'approved' ? 'default' :
+                              property.isApproved === 'pending' ? 'secondary' : 'destructive'
+                            }
+                            className="text-xs"
+                          >
+                            {property.isApproved || 'approved'}
+                          </Badge>
+                          <Badge variant={property.isActive ? 'default' : 'destructive'} className="text-xs">
+                            {property.isActive ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </div>
                       </div>
-                      <Badge
-                        variant={
-                          property.isApproved === 'approved' ? 'default' :
-                          property.isApproved === 'pending' ? 'secondary' : 'destructive'
-                        }
-                      >
-                        {property.isApproved || 'approved'}
-                      </Badge>
-                      <Badge variant={property.isActive ? 'default' : 'destructive'}>
-                        {property.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center justify-end space-x-1 lg:space-x-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleTogglePropertyActive(property._id, property.title)}
+                        className="text-xs lg:text-sm"
                       >
-                        {property.isActive ? <EyeOff className="w-4 h-4 mr-1" /> : <Eye className="w-4 h-4 mr-1" />}
-                        {property.isActive ? 'Deactivate' : 'Activate'}
+                        {property.isActive ? <EyeOff className="w-3 h-3 lg:w-4 lg:h-4 mr-1" /> : <Eye className="w-3 h-3 lg:w-4 lg:h-4 mr-1" />}
+                        <span className="hidden sm:inline">{property.isActive ? 'Deactivate' : 'Activate'}</span>
+                        <span className="sm:hidden">{property.isActive ? 'Off' : 'On'}</span>
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setDeleteDialog({ open: true, type: 'property', id: property._id, name: property.title })}
-                        className="text-destructive hover:text-destructive"
+                        className="text-destructive hover:text-destructive text-xs lg:text-sm"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3 h-3 lg:w-4 lg:h-4" />
                       </Button>
                     </div>
                   </div>

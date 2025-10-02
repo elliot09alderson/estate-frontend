@@ -634,6 +634,53 @@ export const estateApi = createApi({
       }),
       invalidatesTags: ["Feedback"],
     }),
+
+    getMyTours: builder.query<ApiSuccessResponse<any[]>, void>({
+      query: () => ({
+        url: "/tours/my-tours",
+        method: "GET",
+      }),
+      providesTags: ["Property"],
+    }),
+
+    scheduleTour: builder.mutation<
+      ApiSuccessResponse<any>,
+      {
+        propertyId: string;
+        date: string;
+        time: string;
+        notes?: string;
+        buyerPhone?: string;
+        buyerEmail?: string;
+      }
+    >({
+      query: (tourData) => ({
+        url: "/tours/schedule",
+        method: "POST",
+        data: tourData,
+      }),
+      invalidatesTags: ["Property"],
+    }),
+
+    updateTourStatus: builder.mutation<
+      ApiSuccessResponse<any>,
+      { tourId: string; status: string }
+    >({
+      query: ({ tourId, status }) => ({
+        url: `/tours/${tourId}/status`,
+        method: "PUT",
+        data: { status },
+      }),
+      invalidatesTags: ["Property"],
+    }),
+
+    getAgentTours: builder.query<ApiSuccessResponse<any[]>, void>({
+      query: () => ({
+        url: "/tours/agent-tours",
+        method: "GET",
+      }),
+      providesTags: ["Property"],
+    }),
   }),
 });
 
@@ -681,4 +728,8 @@ export const {
   useGetPropertyAverageRatingQuery,
   useUpdateFeedbackMutation,
   useDeleteFeedbackMutation,
+  useGetMyToursQuery,
+  useScheduleTourMutation,
+  useUpdateTourStatusMutation,
+  useGetAgentToursQuery,
 } = estateApi;

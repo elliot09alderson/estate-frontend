@@ -114,7 +114,7 @@ const Favorites = () => {
               </Card>
               <Card className="p-4 text-center">
                 <div className="text-2xl font-bold text-primary">
-                  ${(favoriteProperties.reduce((acc, prop) => acc + prop.price, 0) / favoriteProperties.length).toLocaleString()}
+                  ₹{(favoriteProperties.reduce((acc, prop) => acc + prop.price, 0) / favoriteProperties.length).toLocaleString()}
                 </div>
                 <div className="text-sm text-muted-foreground">Average Price</div>
               </Card>
@@ -175,7 +175,7 @@ const Favorites = () => {
 
                       <div className="flex items-center justify-between mb-3">
                         <div className="text-2xl font-bold text-primary">
-                          ${property.price.toLocaleString()}
+                          ₹{property.price.toLocaleString()}
                         </div>
                       </div>
 

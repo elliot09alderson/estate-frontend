@@ -37,17 +37,16 @@ import {
   Leaf,
   Store,
   TrendingUp,
-  X,
+  Trash2,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import MobileSelect from "@/components/MobileSelect";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import {
-  useCreatePropertyMutation,
-} from "@/store/api-new";
+import { useCreatePropertyMutation } from "@/store/api-new";
 
 const propertySchema = z.object({
   title: z
@@ -58,7 +57,7 @@ const propertySchema = z.object({
     .string()
     .min(1, "Description is required")
     .max(2000, "Description must be less than 2000 characters"),
-  price: z.number().min(0, "Price must be 0 or greater"),
+  price: z.number().min(1, "Price must be greater than 0"),
   category: z.enum(["flat", "land", "shop", "house"]),
   listingType: z.enum(["sale", "rent"]),
   area: z.number().min(1, "Area must be at least 1"),
@@ -110,10 +109,14 @@ const AddProperty = () => {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [selectedState, setSelectedState] = useState<string>("");
   const [selectedCity, setSelectedCity] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [locationDetecting, setLocationDetecting] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const indianStates = State.getStatesOfCountry("IN");
-  const cities = selectedState ? City.getCitiesOfState("IN", selectedState) : [];
+  const cities = selectedState
+    ? City.getCitiesOfState("IN", selectedState)
+    : [];
 
   const [createProperty, { isLoading: isCreating }] =
     useCreatePropertyMutation();
@@ -123,6 +126,7 @@ const AddProperty = () => {
     handleSubmit,
     formState: { errors },
     setValue,
+    watch,
     reset,
   } = useForm<PropertyFormData>({
     resolver: zodResolver(propertySchema),
@@ -140,6 +144,107 @@ const AddProperty = () => {
       setValue("category", category as any);
     }
   }, [category, setValue]);
+
+  // Auto-detect user location when component mounts
+  useEffect(() => {
+    const detectLocation = async () => {
+      if (navigator.geolocation && !selectedState) {
+        setLocationDetecting(true);
+
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            try {
+              const { latitude, longitude } = position.coords;
+
+              // Use reverse geocoding to get location details
+              const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`
+              );
+              const data = await response.json();
+
+              if (data && data.address) {
+                const { state, city, town, village, postcode } = data.address;
+                const detectedState = state || '';
+                const detectedCity = city || town || village || '';
+                const detectedPincode = postcode || '';
+
+                // Find matching Indian state
+                const matchedState = indianStates.find(s =>
+                  s.name.toLowerCase().includes(detectedState.toLowerCase()) ||
+                  detectedState.toLowerCase().includes(s.name.toLowerCase())
+                );
+
+                if (matchedState) {
+                  setSelectedState(matchedState.isoCode);
+                  setValue("state", matchedState.name);
+
+                  // Set city if found
+                  if (detectedCity) {
+                    const stateCities = City.getCitiesOfState("IN", matchedState.isoCode);
+                    const matchedCity = stateCities.find(c =>
+                      c.name.toLowerCase() === detectedCity.toLowerCase()
+                    );
+
+                    if (matchedCity) {
+                      setSelectedCity(matchedCity.name);
+                      setValue("city", matchedCity.name);
+                    } else {
+                      // Use detected city even if not in list
+                      setSelectedCity(detectedCity);
+                      setValue("city", detectedCity);
+                    }
+                  }
+                }
+
+                // Set pincode
+                if (detectedPincode) {
+                  setValue("zipCode", detectedPincode);
+                }
+
+                // Set a partial address
+                const addressParts = [];
+                if (data.address.house_number) addressParts.push(data.address.house_number);
+                if (data.address.road) addressParts.push(data.address.road);
+                if (data.address.neighbourhood) addressParts.push(data.address.neighbourhood);
+                if (addressParts.length > 0) {
+                  setValue("address", addressParts.join(", "));
+                }
+
+                toast.success("Location auto-detected! You can modify if needed.");
+              }
+            } catch (error) {
+              console.error("Geocoding error:", error);
+            } finally {
+              setLocationDetecting(false);
+            }
+          },
+          (error) => {
+            console.error("Geolocation error:", error);
+            setLocationDetecting(false);
+            // Silent fail - user can fill manually
+          },
+          { enableHighAccuracy: true, timeout: 10000 }
+        );
+      }
+    };
+
+    detectLocation();
+  }, [setValue]);
+
+  // Session storage for image persistence
+  useEffect(() => {
+    // Save selected images to session storage
+    if (selectedImages.length > 0) {
+      const imageData = selectedImages.map(file => ({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: file.lastModified
+      }));
+      sessionStorage.setItem('selectedImages', JSON.stringify(imageData));
+    }
+  }, [selectedImages]);
+
 
   const handleCategorySelect = (categoryId: string) => {
     navigate(`/add-property/${categoryId}`);
@@ -164,7 +269,39 @@ const AddProperty = () => {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
-      setSelectedImages((prev) => [...prev, ...filesArray]);
+
+      // Validate file types - only allow jpeg, jpg, png, gif, webp
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+      const validFiles = filesArray.filter(file => {
+        const fileExtension = file.name.split('.').pop()?.toLowerCase();
+        const hasMimeType = file.type && allowedTypes.includes(file.type);
+        const hasValidExtension = fileExtension && allowedExtensions.includes(fileExtension);
+
+        // Accept file if either MIME type is valid OR extension is valid
+        const isValid = hasMimeType || hasValidExtension;
+
+        if (!isValid) {
+          toast.error(`File "${file.name}" is not supported. Only JPEG, JPG, PNG, GIF, and WEBP images are allowed.`);
+          console.log('Rejected file:', {
+            name: file.name,
+            type: file.type,
+            extension: fileExtension,
+            allowedTypes,
+            allowedExtensions
+          });
+        } else if (!hasMimeType && hasValidExtension) {
+          console.log('File accepted by extension despite missing/invalid MIME type:', file.name);
+        }
+
+        return isValid;
+      });
+
+      if (validFiles.length > 0) {
+        setSelectedImages((prev) => [...prev, ...validFiles]);
+        console.log('Added valid files:', validFiles.map(f => ({ name: f.name, type: f.type })));
+      }
     }
   };
 
@@ -176,6 +313,7 @@ const AddProperty = () => {
     fileInputRef.current?.click();
   };
 
+
   const onSubmit = async (data: PropertyFormData) => {
     if (selectedImages.length === 0) {
       toast.error("Please upload at least one image");
@@ -183,49 +321,94 @@ const AddProperty = () => {
     }
 
     try {
-      const formData = new FormData();
+      setIsUploading(true);
+      toast.success("Uploading images...");
 
-      // Append images
-      selectedImages.forEach((file) => {
-        formData.append("images", file);
+      // Step 1: Upload all images first and collect URLs
+      const uploadPromises = selectedImages.map(async (file) => {
+        const formData = new FormData();
+        formData.append('images', file);
+
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/properties/upload`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error(`Upload failed: ${response.status}`);
+          }
+
+          const result = await response.json();
+          console.log('Upload result:', result);
+
+          if (result.success && result.data && result.data.images) {
+            return result.data.images[0]; // Return the first uploaded image URL
+          }
+          throw new Error('Invalid upload response');
+        } catch (error) {
+          console.error('Image upload failed:', error);
+          throw error;
+        }
       });
 
-      // Append property data
-      formData.append("title", data.title);
-      formData.append("description", data.description);
-      formData.append("price", data.price.toString());
-      formData.append("category", data.category);
-      formData.append("listingType", data.listingType);
-      formData.append("area", data.area.toString());
-      formData.append("bedrooms", data.bedrooms !== null && data.bedrooms !== undefined ? data.bedrooms.toString() : "null");
-      formData.append("bathrooms", data.bathrooms !== null && data.bathrooms !== undefined ? data.bathrooms.toString() : "null");
-      formData.append(
-        "location",
-        `${data.city || ""}, ${data.state || ""}`
+      // Wait for all uploads to complete
+      const uploadedImageUrls = await Promise.all(uploadPromises);
+      console.log('All images uploaded:', uploadedImageUrls);
+
+      // Step 2: Create property with real image URLs
+      const propertyData = {
+        title: data.title,
+        description: data.description,
+        price: data.price,
+        category: data.category,
+        listingType: data.listingType,
+        area: data.area,
+        bedrooms: data.bedrooms !== null && data.bedrooms !== undefined
+          ? data.bedrooms
+          : null,
+        bathrooms: data.bathrooms !== null && data.bathrooms !== undefined
+          ? data.bathrooms
+          : null,
+        location: `${data.city || ""}, ${data.state || ""}`
           .trim()
-          .replace(/^,\s*|,\s*$/g, "") || data.location || ""
-      );
-      formData.append("address", data.address);
-      formData.append("features", JSON.stringify(selectedFeatures));
+          .replace(/^,\s*|,\s*$/g, "") ||
+          data.location ||
+          "",
+        address: data.address,
+        features: selectedFeatures,
+        state: data.state,
+        city: data.city,
+        zipCode: data.zipCode,
+        yearBuilt: data.yearBuilt,
+        images: uploadedImageUrls // Real uploaded image URLs
+      };
 
-      await createProperty(formData as any).unwrap();
+      const response = await createProperty(propertyData as any).unwrap();
 
-      toast.success("Property created successfully and is pending approval");
+      toast.success("Property created successfully with all images!");
 
-      // Clear form state
+      // Reset form and redirect
       reset();
       setSelectedImages([]);
       setSelectedFeatures([]);
       setSelectedState("");
       setSelectedCity("");
+      setIsUploading(false);
+      sessionStorage.removeItem('selectedImages');
 
-      // Navigate with replace to avoid adding to history
+      // Redirect to properties listing
       navigate("/properties", { replace: true });
+
     } catch (error: any) {
       console.error("Property creation error:", error);
       const errorMessage =
         error?.data?.message || error?.message || "Failed to create property";
       toast.error(errorMessage);
+      setIsUploading(false);
     }
   };
 
@@ -328,13 +511,16 @@ const AddProperty = () => {
                 <label className="block text-sm font-medium mb-2">
                   Listing Type *
                 </label>
-                <select
-                  {...register("listingType")}
-                  className="w-full p-3 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
-                >
-                  <option value="sale">For Sale</option>
-                  <option value="rent">For Rent</option>
-                </select>
+                <MobileSelect
+                  options={[
+                    { value: "sale", label: "For Sale" },
+                    { value: "rent", label: "For Rent" },
+                  ]}
+                  value={watch("listingType") || "sale"}
+                  onValueChange={(value) => setValue("listingType", value as any)}
+                  placeholder="Select listing type"
+                  label="Listing Type"
+                />
                 {errors.listingType && (
                   <p className="text-destructive text-sm mt-1">
                     {errors.listingType.message}
@@ -381,27 +567,25 @@ const AddProperty = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  State *
+                  State * {locationDetecting && <span className="text-xs text-muted-foreground ml-2">(detecting...)</span>}
                 </label>
-                <select
-                  {...register("state")}
+                <MobileSelect
                   value={selectedState}
-                  onChange={(e) => {
-                    const value = e.target.value;
+                  onValueChange={(value) => {
                     setSelectedState(value);
                     setSelectedCity("");
-                    setValue("state", indianStates.find(s => s.isoCode === value)?.name || "");
+                    setValue(
+                      "state",
+                      indianStates.find((s) => s.isoCode === value)?.name || ""
+                    );
                     setValue("city", "");
                   }}
-                  className="w-full p-3 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
-                >
-                  <option value="">Select State</option>
-                  {indianStates.map((state) => (
-                    <option key={state.isoCode} value={state.isoCode}>
-                      {state.name}
-                    </option>
-                  ))}
-                </select>
+                  placeholder="Select State"
+                  options={indianStates.map((state) => ({
+                    value: state.isoCode,
+                    label: state.name,
+                  }))}
+                />
                 {errors.state && (
                   <p className="text-destructive text-sm mt-1">
                     {errors.state.message}
@@ -409,25 +593,22 @@ const AddProperty = () => {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">City *</label>
-                <select
-                  {...register("city")}
+                <label className="block text-sm font-medium mb-2">
+                  City * {locationDetecting && <span className="text-xs text-muted-foreground ml-2">(detecting...)</span>}
+                </label>
+                <MobileSelect
                   value={selectedCity}
-                  onChange={(e) => {
-                    const value = e.target.value;
+                  onValueChange={(value) => {
                     setSelectedCity(value);
                     setValue("city", value);
                   }}
+                  placeholder="Select City"
                   disabled={!selectedState}
-                  className="w-full p-3 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <option value="">Select City</option>
-                  {cities.map((city) => (
-                    <option key={city.name} value={city.name}>
-                      {city.name}
-                    </option>
-                  ))}
-                </select>
+                  options={cities.map((city) => ({
+                    value: city.name,
+                    label: city.name,
+                  }))}
+                />
                 {errors.city && (
                   <p className="text-destructive text-sm mt-1">
                     {errors.city.message}
@@ -436,7 +617,7 @@ const AddProperty = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  ZIP Code
+                  ZIP Code {locationDetecting && <span className="text-xs text-muted-foreground ml-2">(detecting...)</span>}
                 </label>
                 <input
                   type="text"
@@ -453,11 +634,12 @@ const AddProperty = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Price ($) *
+                  Price (₹) *
                 </label>
                 <input
                   type="number"
-                  placeholder="0"
+                  min="1"
+                  placeholder="100000"
                   {...register("price", { valueAsNumber: true })}
                   className="w-full p-3 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground placeholder:text-muted-foreground"
                 />
@@ -473,7 +655,8 @@ const AddProperty = () => {
                 </label>
                 <input
                   type="number"
-                  placeholder="0"
+                  min="1"
+                  placeholder="1000"
                   {...register("area", { valueAsNumber: true })}
                   className="w-full p-3 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground placeholder:text-muted-foreground"
                 />
@@ -489,18 +672,21 @@ const AddProperty = () => {
                   <label className="block text-sm font-medium mb-2">
                     Bedrooms
                   </label>
-                  <select
-                    {...register("bedrooms", { valueAsNumber: true })}
-                    className="w-full p-3 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
-                  >
-                    <option value="0">0</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6+</option>
-                  </select>
+                  <MobileSelect
+                    options={[
+                      { value: "0", label: "0" },
+                      { value: "1", label: "1" },
+                      { value: "2", label: "2" },
+                      { value: "3", label: "3" },
+                      { value: "4", label: "4" },
+                      { value: "5", label: "5" },
+                      { value: "6", label: "6+" },
+                    ]}
+                    value={watch("bedrooms")?.toString() || "0"}
+                    onValueChange={(value) => setValue("bedrooms", parseInt(value))}
+                    placeholder="Select bedrooms"
+                    label="Bedrooms"
+                  />
                   {errors.bedrooms && (
                     <p className="text-destructive text-sm mt-1">
                       {errors.bedrooms.message}
@@ -516,18 +702,21 @@ const AddProperty = () => {
                   <label className="block text-sm font-medium mb-2">
                     Bathrooms
                   </label>
-                  <select
-                    {...register("bathrooms", { valueAsNumber: true })}
-                    className="w-full p-3 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
-                  >
-                    <option value="0">0</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6+</option>
-                  </select>
+                  <MobileSelect
+                    options={[
+                      { value: "0", label: "0" },
+                      { value: "1", label: "1" },
+                      { value: "2", label: "2" },
+                      { value: "3", label: "3" },
+                      { value: "4", label: "4" },
+                      { value: "5", label: "5" },
+                      { value: "6", label: "6+" },
+                    ]}
+                    value={watch("bathrooms")?.toString() || "0"}
+                    onValueChange={(value) => setValue("bathrooms", parseInt(value))}
+                    placeholder="Select bathrooms"
+                    label="Bathrooms"
+                  />
                   {errors.bathrooms && (
                     <p className="text-destructive text-sm mt-1">
                       {errors.bathrooms.message}
@@ -540,6 +729,8 @@ const AddProperty = () => {
                   </label>
                   <input
                     type="number"
+                    min="1900"
+                    max="2025"
                     placeholder="2020"
                     {...register("yearBuilt", { valueAsNumber: true })}
                     className="w-full p-3 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground placeholder:text-muted-foreground"
@@ -703,7 +894,7 @@ const AddProperty = () => {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
               multiple
               onChange={handleFileSelect}
               className="hidden"
@@ -742,9 +933,9 @@ const AddProperty = () => {
                     <button
                       type="button"
                       onClick={() => handleRemoveImage(index)}
-                      className="absolute top-2 right-2 bg-destructive text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-2 right-2 bg-black/70 hover:bg-black text-white p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110 w-8 h-8 flex items-center justify-center"
                     >
-                      <X className="w-4 h-4" />
+                      <Trash2 className="w-3 h-3" />
                     </button>
                   </div>
                 ))}
@@ -752,7 +943,7 @@ const AddProperty = () => {
             )}
           </Card>
 
-          <div className="flex justify-end space-x-4 pt-6">
+          <div className="flex justify-center space-x-4 pt-6">
             <Button
               type="button"
               variant="outline"
@@ -765,12 +956,13 @@ const AddProperty = () => {
               type="submit"
               className="btn-gradient-primary"
               size="lg"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isUploading}
             >
-              {isCreating ? "Creating property..." : "Publish Property"}
+              {isUploading ? "Uploading images..." : isCreating ? "Creating property..." : "Publish Property"}
             </Button>
           </div>
         </form>
+
       </div>
     </div>
   );

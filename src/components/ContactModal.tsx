@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Send, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import axios from 'axios';
 
 interface ContactModalProps {
   open: boolean;
@@ -19,6 +21,7 @@ interface ContactModalProps {
   agentName: string;
   agentEmail: string;
   propertyTitle?: string;
+  propertyId: string;
 }
 
 const ContactModal: React.FC<ContactModalProps> = ({
@@ -27,7 +30,9 @@ const ContactModal: React.FC<ContactModalProps> = ({
   agentName,
   agentEmail,
   propertyTitle,
+  propertyId,
 }) => {
+  const { user, isAuthenticated } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -36,10 +41,18 @@ const ContactModal: React.FC<ContactModalProps> = ({
 
   const { toast } = useToast();
 
+  // Pre-fill user data if authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      setName(user.name || '');
+      setEmail(user.email || '');
+    }
+  }, [isAuthenticated, user]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim() || !email.trim() || !message.trim()) {
+    if (!name.trim() || !email.trim() || !phone.trim() || !message.trim()) {
       toast({
         title: "Error",
         description: "Please fill in all required fields.",
@@ -51,22 +64,38 @@ const ContactModal: React.FC<ContactModalProps> = ({
     setLoading(true);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const token = localStorage.getItem('token');
+      const config = token ? {
+        headers: { Authorization: `Bearer ${token}` }
+      } : {};
 
-      toast({
-        title: "Message Sent",
-        description: `Your message has been sent to ${agentName}. They will contact you soon.`,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/messages/send`,
+        {
+          propertyId,
+          senderName: name,
+          senderEmail: email,
+          senderPhone: phone,
+          message
+        },
+        config
+      );
 
-      setName('');
-      setEmail('');
-      setPhone('');
-      setMessage('');
-      onClose();
-    } catch (error) {
+      if (response.data.success) {
+        toast({
+          title: "Message Sent",
+          description: `Your message has been sent to ${agentName}. They will contact you soon.`,
+        });
+
+        // Only clear phone and message, keep name and email
+        setPhone('');
+        setMessage('');
+        onClose();
+      }
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: error.response?.data?.message || "Failed to send message. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -94,6 +123,7 @@ const ContactModal: React.FC<ContactModalProps> = ({
               placeholder="John Doe"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              disabled={isAuthenticated}
               required
             />
           </div>
@@ -107,17 +137,21 @@ const ContactModal: React.FC<ContactModalProps> = ({
               placeholder="john@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={isAuthenticated}
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Phone (Optional)</label>
+            <label className="block text-sm font-medium mb-2">
+              Phone <span className="text-destructive">*</span>
+            </label>
             <Input
               type="tel"
               placeholder="+1 (555) 123-4567"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+              required
             />
           </div>
 

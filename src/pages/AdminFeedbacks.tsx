@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import MobileSelect from '@/components/MobileSelect';
 import { useRespondToFeedbackMutation } from '@/store/api-new';
 import { useGetAllFeedbacksQuery } from '@/hooks/useAdaptedApi';
 import { Link } from 'react-router-dom';
@@ -142,19 +143,21 @@ const AdminFeedbacks = () => {
             <h3 className="text-lg font-semibold">All Feedbacks</h3>
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-muted-foreground" />
-              <select
-                className="p-2 border rounded-lg text-sm"
+              <MobileSelect
                 value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value);
+                onValueChange={(value) => {
+                  setStatusFilter(value);
                   setPage(1);
                 }}
-              >
-                <option value="">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="reviewed">Reviewed</option>
-                <option value="resolved">Resolved</option>
-              </select>
+                placeholder="All Status"
+                options={[
+                  { value: "", label: "All Status" },
+                  { value: "pending", label: "Pending" },
+                  { value: "reviewed", label: "Reviewed" },
+                  { value: "resolved", label: "Resolved" }
+                ]}
+                className="w-40"
+              />
             </div>
           </div>
 

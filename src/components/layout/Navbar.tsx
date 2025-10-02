@@ -2,17 +2,19 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { 
-  Home, 
-  Heart, 
-  PlusCircle, 
-  User, 
-  Settings, 
-  LogOut, 
-  Moon, 
+import {
+  Home,
+  Heart,
+  PlusCircle,
+  User,
+  Settings,
+  LogOut,
+  Moon,
   Sun,
   Menu,
-  X
+  X,
+  Calendar,
+  MessageCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -40,10 +42,17 @@ const Navbar = () => {
 
   const navigation = [
     { name: 'Properties', href: '/properties', icon: Home },
-    ...(user?.role === 'agent' || user?.role === 'admin' 
-      ? [{ name: 'Add Property', href: '/add-property', icon: PlusCircle }] 
+    ...(user?.role === 'agent' || user?.role === 'admin'
+      ? [{ name: 'Add Property', href: '/add-property', icon: PlusCircle }]
       : []
     ),
+    ...(user?.role === 'user' ? [{ name: 'My Tours', href: '/my-tours', icon: Calendar }] : []),
+    ...(user?.role === 'agent' || user?.role === 'admin'
+      ? [{ name: 'Tour Requests', href: '/agent-tours', icon: Calendar }]
+      : []),
+    ...(user?.role === 'agent' || user?.role === 'admin'
+      ? [{ name: 'My Messages', href: '/my-messages', icon: MessageCircle }]
+      : []),
     ...(user ? [{ name: 'Favorites', href: '/favorites', icon: Heart }] : []),
     ...(user?.role === 'admin' ? [{ name: 'Admin', href: '/admin', icon: Settings }] : []),
   ];
@@ -85,8 +94,8 @@ const Navbar = () => {
           </div>
 
           {/* Right Section */}
-          <div className="flex items-center space-x-4">
-            {/* Theme Toggle */}
+          <div className="flex items-center space-x-3">
+            {/* Theme Toggle - All Devices */}
             <Button
               variant="ghost"
               size="icon"
@@ -142,52 +151,9 @@ const Navbar = () => {
                 </Button>
               </div>
             )}
-
-            {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden w-9 h-9"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-            </Button>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="md:hidden py-4 border-t border-border"
-          >
-            <div className="flex flex-col space-y-2">
-              {navigation.map((item) => {
-                const isActive = location.pathname === item.href ||
-                                (item.href !== '/' && location.pathname.startsWith(item.href));
-
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    onClick={() => setIsMenuOpen(false)}
-                    className={cn(
-                      "flex items-center space-x-2 px-4 py-3 rounded-lg transition-all duration-200",
-                      isActive
-                        ? "bg-primary text-primary-foreground font-medium"
-                        : "text-foreground/80 hover:text-foreground hover:bg-secondary/50"
-                    )}
-                  >
-                    <item.icon className="w-4 h-4" />
-                    <span>{item.name}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
       </div>
     </nav>
   );

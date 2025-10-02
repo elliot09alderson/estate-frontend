@@ -16,10 +16,13 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import Favorites from "./pages/Favorites";
+import MyTours from "./pages/MyTours";
+import AgentTours from "./pages/AgentTours";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminActivities from "./pages/AdminActivities";
 import AdminFeedbacks from "./pages/AdminFeedbacks";
 import AdminPropertyRequirements from "./pages/AdminPropertyRequirements";
+import MyMessages from "./pages/MyMessages";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
 
@@ -63,21 +66,45 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 />
-                <Route 
-                  path="favorites" 
+                <Route
+                  path="favorites"
                   element={
                     <ProtectedRoute>
                       <Favorites />
                     </ProtectedRoute>
-                  } 
+                  }
                 />
-                <Route 
-                  path="profile" 
+                <Route
+                  path="my-tours"
+                  element={
+                    <ProtectedRoute roles={['user']}>
+                      <MyTours />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="agent-tours"
+                  element={
+                    <ProtectedRoute roles={['agent', 'admin']}>
+                      <AgentTours />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="my-messages"
+                  element={
+                    <ProtectedRoute roles={['agent', 'admin']}>
+                      <MyMessages />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="profile"
                   element={
                     <ProtectedRoute>
                       <Profile />
                     </ProtectedRoute>
-                  } 
+                  }
                 />
                 
                 {/* Admin only routes */}
