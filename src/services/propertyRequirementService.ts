@@ -61,7 +61,7 @@ export interface PropertyRequirementStats {
 }
 
 class PropertyRequirementService {
-  private baseURL = '/api/property-requirements';
+  private baseURL = '/property-requirements';
 
   async createRequirement(data: PropertyRequirement): Promise<PropertyRequirementResponse> {
     try {

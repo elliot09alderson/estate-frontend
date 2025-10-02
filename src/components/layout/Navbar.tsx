@@ -103,9 +103,9 @@ const Navbar = () => {
               className="w-9 h-9 rounded-lg hover:bg-secondary/50"
             >
               {theme === 'light' ? (
-                <Moon className="w-4 h-4" />
+                <Moon className="w-4 h-4 text-foreground" />
               ) : (
-                <Sun className="w-4 h-4" />
+                <Sun className="w-4 h-4 text-foreground" />
               )}
             </Button>
 

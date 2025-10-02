@@ -175,17 +175,17 @@ const AdminPropertyRequirements = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex justify-between items-center"
+        className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4"
       >
-        <div>
-          <h1 className="text-3xl font-bold">Property Requirements</h1>
-          <p className="text-muted-foreground">Manage customer property requirements</p>
+        <div className="space-y-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Property Requirements</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage customer property requirements</p>
         </div>
-        <Button onClick={fetchRequirements} disabled={loading}>
+        <Button onClick={fetchRequirements} disabled={loading} className="self-start sm:self-auto">
           <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
@@ -197,24 +197,24 @@ const AdminPropertyRequirements = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        <Card className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-            <div>
+        <Card className="p-4 sm:p-6 bg-background/95 backdrop-blur-sm border shadow-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="sm:col-span-2 lg:col-span-1">
               <Input
                 placeholder="Search by name, email, location..."
                 value={filters.search || ''}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
-                className="w-full"
+                className="w-full bg-background/80"
               />
             </div>
             <Select
               value={filters.status || 'all'}
               onValueChange={(value) => handleFilterChange('status', value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-background/80">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background border">
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="contacted">Contacted</SelectItem>
@@ -227,10 +227,10 @@ const AdminPropertyRequirements = () => {
               value={filters.propertyType || 'all'}
               onValueChange={(value) => handleFilterChange('propertyType', value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-background/80">
                 <SelectValue placeholder="Filter by property type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background border">
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="apartment">Apartment</SelectItem>
                 <SelectItem value="house">House</SelectItem>
@@ -238,7 +238,7 @@ const AdminPropertyRequirements = () => {
                 <SelectItem value="land">Land</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" onClick={clearFilters}>
+            <Button variant="outline" onClick={clearFilters} className="w-full sm:w-auto bg-background/80">
               Clear Filters
             </Button>
           </div>
@@ -270,27 +270,27 @@ const AdminPropertyRequirements = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
             >
-              <Card className="p-6 hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                      <User className="w-6 h-6 text-primary" />
+              <Card className="p-4 sm:p-6 hover:shadow-md transition-shadow bg-background/80 backdrop-blur-sm">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                      <User className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">{requirement.name}</h3>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-base sm:text-lg truncate">{requirement.name}</h3>
+                      <div className="space-y-1 sm:space-y-0 sm:flex sm:items-center sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
-                          <Mail className="w-4 h-4" />
-                          {requirement.email}
+                          <Mail className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <span className="truncate">{requirement.email}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Phone className="w-4 h-4" />
-                          {requirement.phone}
+                          <Phone className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <span>{requirement.phone}</span>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:flex-shrink-0">
                     {getStatusBadge(requirement.status || 'pending')}
                     <Button
                       variant="outline"
@@ -300,37 +300,38 @@ const AdminPropertyRequirements = () => {
                         setNewStatus(requirement.status || 'pending');
                         setShowStatusDialog(true);
                       }}
+                      className="w-full sm:w-auto text-xs sm:text-sm"
                     >
                       Update Status
                     </Button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
                   {requirement.propertyType && (
-                    <div className="flex items-center gap-2">
-                      <Home className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Home className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
+                      <span className="text-xs sm:text-sm truncate">
                         {requirement.propertyType.charAt(0).toUpperCase() + requirement.propertyType.slice(1)}
                       </span>
                     </div>
                   )}
                   {requirement.budgetRange && (
-                    <div className="flex items-center gap-2">
-                      <IndianRupee className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm">{getBudgetDisplay(requirement.budgetRange)}</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <IndianRupee className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
+                      <span className="text-xs sm:text-sm truncate">{getBudgetDisplay(requirement.budgetRange)}</span>
                     </div>
                   )}
                   {requirement.preferredLocation && (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm">{requirement.preferredLocation}</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <MapPin className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
+                      <span className="text-xs sm:text-sm truncate">{requirement.preferredLocation}</span>
                     </div>
                   )}
                   {requirement.createdAt && (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm">{formatDate(requirement.createdAt)}</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
+                      <span className="text-xs sm:text-sm truncate">{formatDate(requirement.createdAt)}</span>
                     </div>
                   )}
                 </div>
@@ -363,21 +364,23 @@ const AdminPropertyRequirements = () => {
 
       {/* Pagination */}
       {pagination.pages > 1 && (
-        <div className="flex justify-center gap-2">
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4 px-4">
           <Button
             variant="outline"
             onClick={() => setFilters(prev => ({ ...prev, page: (prev.page || 1) - 1 }))}
             disabled={pagination.page <= 1}
+            className="w-full sm:w-auto bg-background/80"
           >
             Previous
           </Button>
-          <span className="flex items-center px-4">
+          <span className="flex items-center px-3 py-2 text-sm text-muted-foreground">
             Page {pagination.page} of {pagination.pages}
           </span>
           <Button
             variant="outline"
             onClick={() => setFilters(prev => ({ ...prev, page: (prev.page || 1) + 1 }))}
             disabled={pagination.page >= pagination.pages}
+            className="w-full sm:w-auto bg-background/80"
           >
             Next
           </Button>
