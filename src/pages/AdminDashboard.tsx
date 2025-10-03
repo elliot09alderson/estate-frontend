@@ -16,7 +16,8 @@ import {
   AlertCircle,
   MessageSquare,
   Ban,
-  FileText
+  FileText,
+  UserCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -233,26 +234,23 @@ const AdminDashboard = () => {
             <h1 className="text-2xl lg:text-3xl font-bold">Admin Dashboard</h1>
             <p className="text-muted-foreground text-sm lg:text-base">Manage users, properties, and platform analytics</p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Link to="/admin/activities">
-              <Button variant="outline" size="sm" className="text-xs lg:text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
+            <Link to="/admin/activities" className="w-full">
+              <Button variant="outline" size="sm" className="text-xs lg:text-sm w-full">
                 <ActivityIcon className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
-                <span className="hidden sm:inline">Activities</span>
-                <span className="sm:hidden">Act</span>
+                <span>Activities</span>
               </Button>
             </Link>
-            <Link to="/admin/feedbacks">
-              <Button variant="outline" size="sm" className="text-xs lg:text-sm">
+            <Link to="/admin/feedbacks" className="w-full">
+              <Button variant="outline" size="sm" className="text-xs lg:text-sm w-full">
                 <MessageSquare className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
-                <span className="hidden sm:inline">Feedbacks</span>
-                <span className="sm:hidden">Feed</span>
+                <span>Feedbacks</span>
               </Button>
             </Link>
-            <Link to="/admin/property-requirements">
-              <Button variant="outline" size="sm" className="text-xs lg:text-sm">
+            <Link to="/admin/property-requirements" className="w-full">
+              <Button variant="outline" size="sm" className="text-xs lg:text-sm w-full">
                 <FileText className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
-                <span className="hidden sm:inline">Property Requirements</span>
-                <span className="sm:hidden">Req</span>
+                <span>Property Requirements</span>
               </Button>
             </Link>
           </div>
@@ -315,34 +313,32 @@ const AdminDashboard = () => {
 
         {/* Navigation Tabs */}
         <div className="mt-8 mb-6">
-          <div className="flex flex-wrap lg:flex-nowrap lg:space-x-2 bg-secondary/30 backdrop-blur-sm p-2 rounded-xl w-full lg:w-fit gap-2 lg:gap-0 border border-border/20">
+          <div className="grid grid-cols-2 gap-2 bg-secondary/30 backdrop-blur-sm p-2 rounded-xl w-full border border-border/20">
             <Button
               variant={activeTab === 'overview' ? 'default' : 'ghost'}
               onClick={() => setActiveTab('overview')}
-              className={`flex-1 lg:flex-none px-3 lg:px-6 py-2 text-xs lg:text-sm font-medium transition-all duration-200 ${
+              className={`w-full px-3 lg:px-6 py-3 text-xs lg:text-sm font-medium transition-all duration-200 ${
                 activeTab === 'overview'
-                  ? 'bg-primary text-primary-foreground shadow-lg scale-105'
-                  : 'hover:bg-secondary/50 hover:scale-102'
+                  ? 'bg-primary text-primary-foreground shadow-lg'
+                  : 'hover:bg-secondary/50'
               }`}
               size="sm"
             >
               <BarChart3 className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
-              <span className="hidden sm:inline">Overview</span>
-              <span className="sm:hidden">Over</span>
+              <span>Overview</span>
             </Button>
             <Button
               variant={activeTab === 'pending' ? 'default' : 'ghost'}
               onClick={() => setActiveTab('pending')}
-              className={`flex-1 lg:flex-none px-3 lg:px-6 py-2 relative text-xs lg:text-sm font-medium transition-all duration-200 ${
+              className={`w-full px-3 lg:px-6 py-3 relative text-xs lg:text-sm font-medium transition-all duration-200 ${
                 activeTab === 'pending'
-                  ? 'bg-primary text-primary-foreground shadow-lg scale-105'
-                  : 'hover:bg-secondary/50 hover:scale-102'
+                  ? 'bg-primary text-primary-foreground shadow-lg'
+                  : 'hover:bg-secondary/50'
               }`}
               size="sm"
             >
               <AlertCircle className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
-              <span className="hidden sm:inline">Pending</span>
-              <span className="sm:hidden">Pend</span>
+              <span>Pending</span>
               {pendingProperties.length > 0 && (
                 <Badge className="ml-1 lg:ml-2 bg-warning text-white text-xs animate-pulse">{pendingProperties.length}</Badge>
               )}
@@ -350,30 +346,28 @@ const AdminDashboard = () => {
             <Button
               variant={activeTab === 'properties' ? 'default' : 'ghost'}
               onClick={() => setActiveTab('properties')}
-              className={`flex-1 lg:flex-none px-3 lg:px-6 py-2 text-xs lg:text-sm font-medium transition-all duration-200 ${
+              className={`w-full px-3 lg:px-6 py-3 text-xs lg:text-sm font-medium transition-all duration-200 ${
                 activeTab === 'properties'
-                  ? 'bg-primary text-primary-foreground shadow-lg scale-105'
-                  : 'hover:bg-secondary/50 hover:scale-102'
+                  ? 'bg-primary text-primary-foreground shadow-lg'
+                  : 'hover:bg-secondary/50'
               }`}
               size="sm"
             >
               <Home className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
-              <span className="hidden sm:inline">Properties</span>
-              <span className="sm:hidden">Prop</span>
+              <span>Properties</span>
             </Button>
             <Button
               variant={activeTab === 'users' ? 'default' : 'ghost'}
               onClick={() => setActiveTab('users')}
-              className={`flex-1 lg:flex-none px-3 lg:px-6 py-2 text-xs lg:text-sm font-medium transition-all duration-200 ${
+              className={`w-full px-3 lg:px-6 py-3 text-xs lg:text-sm font-medium transition-all duration-200 ${
                 activeTab === 'users'
-                  ? 'bg-primary text-primary-foreground shadow-lg scale-105'
-                  : 'hover:bg-secondary/50 hover:scale-102'
+                  ? 'bg-primary text-primary-foreground shadow-lg'
+                  : 'hover:bg-secondary/50'
               }`}
               size="sm"
             >
               <Users className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
-              <span className="hidden sm:inline">Users</span>
-              <span className="sm:hidden">User</span>
+              <span>Users</span>
             </Button>
           </div>
         </div>
@@ -381,20 +375,38 @@ const AdminDashboard = () => {
         {activeTab === 'overview' && (
           <div className="space-y-6">
             <Card className="card-elevated p-6">
-              <h3 className="text-lg font-semibold mb-4">Quick Stats</h3>
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <BarChart3 className="w-5 h-5" />
+                Quick Stats
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-secondary/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">Pending Properties</p>
-                  <p className="text-2xl font-bold">{stats?.data?.properties?.pending || 0}</p>
-                </div>
-                <div className="p-4 bg-secondary/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">Rejected Properties</p>
-                  <p className="text-2xl font-bold">{stats?.data?.properties?.rejected || 0}</p>
-                </div>
-                <div className="p-4 bg-secondary/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">Active Agents</p>
-                  <p className="text-2xl font-bold">{users.filter(u => u.role === 'agent' && u.isActive).length}</p>
-                </div>
+                <Card className="p-4 border-l-4 border-l-orange-500">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Pending Properties</p>
+                      <p className="text-2xl font-bold">{stats?.data?.properties?.pending || 0}</p>
+                    </div>
+                    <AlertCircle className="w-5 h-5 text-orange-500" />
+                  </div>
+                </Card>
+                <Card className="p-4 border-l-4 border-l-red-500">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Rejected Properties</p>
+                      <p className="text-2xl font-bold">{stats?.data?.properties?.rejected || 0}</p>
+                    </div>
+                    <XCircle className="w-5 h-5 text-red-500" />
+                  </div>
+                </Card>
+                <Card className="p-4 border-l-4 border-l-green-500">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Active Agents</p>
+                      <p className="text-2xl font-bold">{users.filter(u => u.role === 'agent' && u.isActive).length}</p>
+                    </div>
+                    <UserCheck className="w-5 h-5 text-green-500" />
+                  </div>
+                </Card>
               </div>
             </Card>
             <AdminCharts data={{
@@ -504,59 +516,74 @@ const AdminDashboard = () => {
               <p className="text-muted-foreground">Manage user accounts and permissions</p>
             </div>
             <div className="p-6">
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {users.map((user) => (
-                  <div key={user._id} className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-4 border border-border rounded-lg space-y-4 lg:space-y-0">
-                    <div className="flex items-center space-x-3 lg:space-x-4 flex-1 min-w-0">
-                      <Avatar className="flex-shrink-0">
-                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm lg:text-base truncate">{user.name}</h4>
-                        <p className="text-xs lg:text-sm text-muted-foreground truncate">{user.email}</p>
+                  <Card key={user._id} className="p-4 hover:shadow-lg transition-shadow duration-200 border-l-4 border-l-primary">
+                    <div className="flex flex-col space-y-3">
+                      {/* Header */}
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center space-x-3">
+                          <Avatar className="h-12 w-12 border-2 border-primary/20">
+                            <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">
+                              {user.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-base">{user.name}</h4>
+                            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex flex-col lg:flex-row gap-1 lg:gap-2">
-                        <Badge variant={user.role === 'agent' ? 'default' : 'secondary'} className="text-xs">
+
+                      {/* Badges */}
+                      <div className="flex gap-2">
+                        <Badge
+                          variant={user.role === 'admin' ? 'destructive' : user.role === 'agent' ? 'default' : 'secondary'}
+                          className="capitalize"
+                        >
                           {user.role}
                         </Badge>
-                        <Badge variant={user.isActive ? 'default' : 'destructive'} className="text-xs">
-                          {user.isActive ? 'Active' : 'Inactive'}
+                        <Badge
+                          variant={user.isActive ? 'outline' : 'destructive'}
+                          className={user.isActive ? 'border-green-500 text-green-600' : ''}
+                        >
+                          {user.isActive ? '● Active' : '○ Inactive'}
                         </Badge>
                       </div>
-                    </div>
-                    <div className="flex items-center justify-end space-x-1 lg:space-x-2">
-                      {user.role === 'agent' && (
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 pt-2 border-t">
+                        {user.role === 'agent' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleToggleAgentStatus(user._id, user.isActive, user.name)}
+                            className="flex-1 text-xs"
+                          >
+                            {user.isActive ? <EyeOff className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
+                            {user.isActive ? 'Deactivate' : 'Activate'}
+                          </Button>
+                        )}
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleToggleAgentStatus(user._id, user.isActive, user.name)}
-                          className="text-xs lg:text-sm"
+                          onClick={() => handleToggleUserBlock(user._id, !user.isActive, user.name)}
+                          className={`flex-1 text-xs ${!user.isActive ? 'text-green-600 hover:bg-green-50' : 'text-orange-600 hover:bg-orange-50'}`}
                         >
-                          {user.isActive ? <EyeOff className="w-3 h-3 lg:w-4 lg:h-4 mr-1" /> : <Eye className="w-3 h-3 lg:w-4 lg:h-4 mr-1" />}
-                          <span className="hidden sm:inline">{user.isActive ? 'Deactivate' : 'Activate'}</span>
-                          <span className="sm:hidden">{user.isActive ? 'Off' : 'On'}</span>
+                          <Ban className="w-3 h-3 mr-1" />
+                          {!user.isActive ? 'Unblock' : 'Block'}
                         </Button>
-                      )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleToggleUserBlock(user._id, !user.isActive, user.name)}
-                        className={`text-xs lg:text-sm ${!user.isActive ? 'text-success' : 'text-warning'}`}
-                      >
-                        <Ban className="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
-                        <span className="hidden sm:inline">{!user.isActive ? 'Unblock' : 'Block'}</span>
-                        <span className="sm:hidden">{!user.isActive ? 'Un' : 'Blk'}</span>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setDeleteDialog({ open: true, type: 'user', id: user._id, name: user.name })}
-                        className="text-destructive hover:text-destructive text-xs lg:text-sm"
-                      >
-                        <Trash2 className="w-3 h-3 lg:w-4 lg:h-4" />
-                      </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteDialog({ open: true, type: 'user', id: user._id, name: user.name })}
+                          className="text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
+                  </Card>
                 ))}
               </div>
             </div>

@@ -57,16 +57,33 @@ const Properties = () => {
   const [searchParams] = useSearchParams();
   const initialSearch = searchParams.get("search") || "";
 
-  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  // Get cached location and set as default search if available and no initial search
+  const getCachedLocationSearch = () => {
+    if (initialSearch) return initialSearch;
+
+    const cachedLocation = locationService.getCachedLocation();
+    if (cachedLocation) {
+      // Create search term from city and state
+      const locationParts = [cachedLocation.city, cachedLocation.state].filter(Boolean);
+      return locationParts.join(", ");
+    }
+    return "";
+  };
+
+  const [searchTerm, setSearchTerm] = useState(getCachedLocationSearch());
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 10000000]);
   const [tempPriceRange, setTempPriceRange] = useState([0, 10000000]);
   const [isFiltering, setIsFiltering] = useState(false);
   const [allProperties, setAllProperties] = useState<any[]>([]);
-  const [filters, setFilters] = useState<PropertyFilters>({
-    page: 1,
-    limit: 12,
-    ...(initialSearch && { location: initialSearch }),
+  const [filters, setFilters] = useState<PropertyFilters>(() => {
+    const cachedLocationSearch = getCachedLocationSearch();
+    return {
+      page: 1,
+      limit: 12,
+      ...(initialSearch && { location: initialSearch }),
+      ...(!initialSearch && cachedLocationSearch && { location: cachedLocationSearch }),
+    };
   });
 
   // Debounce only search values (price will be handled on commit)
@@ -95,6 +112,16 @@ const Properties = () => {
   const { ref: loadMoreRef, inView } = useInView({
     threshold: 0,
   });
+
+  // Show toast when using cached location data
+  useEffect(() => {
+    const cachedLocation = locationService.getCachedLocation();
+    if (cachedLocation && !initialSearch && searchTerm) {
+      toast.success("Using your saved location for search", {
+        description: `Searching properties in ${searchTerm}`,
+      });
+    }
+  }, []); // Run only once on mount
 
   // Handle URL search parameter changes
   useEffect(() => {

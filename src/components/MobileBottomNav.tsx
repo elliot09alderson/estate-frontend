@@ -65,38 +65,41 @@ const MobileBottomNav: React.FC = () => {
             <Link
               key={item.path}
               to={item.path}
-              className="relative flex flex-col items-center justify-center flex-1 h-full py-2 touch-manipulation active:scale-95 transition-transform"
+              className="relative flex flex-col items-center justify-center flex-1 h-full py-2 touch-manipulation active:scale-95 transition-transform group"
             >
-              <div className="relative">
-                <Icon
-                  className={`w-5 h-5 transition-all duration-200 ${
-                    isActive
-                      ? 'text-primary'
-                      : 'text-muted-foreground'
-                  }`}
-                />
-                {isActive && (
-                  <motion.div
-                    layoutId="activeTab"
-                    className="absolute -inset-3 bg-primary/15 rounded-2xl -z-10 blur-sm"
-                    initial={false}
-                    transition={{
-                      type: "spring",
-                      stiffness: 400,
-                      damping: 25
-                    }}
+              <div className="relative flex flex-col items-center">
+                <div className="relative flex items-center justify-center w-10 h-10">
+                  <Icon
+                    className={`w-5 h-5 transition-all duration-200 z-10 ${
+                      isActive
+                        ? 'text-primary'
+                        : 'text-muted-foreground group-hover:text-foreground'
+                    }`}
                   />
-                )}
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute inset-0 bg-primary/15 rounded-full blur-sm -z-10"
+                      initial={false}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 25
+                      }}
+                    />
+                  )}
+                  <div className="absolute inset-0 rounded-full bg-primary/10 opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-200 -z-10" />
+                </div>
+                <span
+                  className={`text-[10px] mt-0.5 transition-all duration-200 ${
+                    isActive
+                      ? 'text-primary font-medium'
+                      : 'text-muted-foreground group-hover:text-foreground'
+                  }`}
+                >
+                  {item.label}
+                </span>
               </div>
-              <span
-                className={`text-[10px] mt-1 transition-all duration-200 ${
-                  isActive
-                    ? 'text-primary font-medium'
-                    : 'text-muted-foreground'
-                }`}
-              >
-                {item.label}
-              </span>
             </Link>
           );
         })}

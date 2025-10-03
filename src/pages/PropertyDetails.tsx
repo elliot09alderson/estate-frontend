@@ -465,44 +465,6 @@ const PropertyDetails = () => {
             initialIndex={selectedImageIndex}
             propertyTitle={property.title}
           />
-
-          {/* Mortgage Calculator */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Mortgage Calculator</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium mb-1">Loan Amount</label>
-                <input 
-                  type="text" 
-                  defaultValue={`₹${property.price.toLocaleString()}`}
-                  className="w-full p-2 border rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Interest Rate (%)</label>
-                <input 
-                  type="text" 
-                  defaultValue="6.5"
-                  className="w-full p-2 border rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Loan Term (years)</label>
-                <input 
-                  type="text" 
-                  defaultValue="30"
-                  className="w-full p-2 border rounded-lg"
-                />
-              </div>
-              <Button variant="outline" className="w-full mt-4">
-                Calculate Payment
-              </Button>
-              <div className="text-center p-3 bg-secondary rounded-lg">
-                <p className="text-sm text-muted-foreground">Estimated Monthly Payment</p>
-                <p className="text-lg font-bold">₹1,26,750/month</p>
-              </div>
-            </div>
-          </Card>
         </div>
       </div>
     </div>

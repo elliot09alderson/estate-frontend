@@ -132,10 +132,10 @@ const Login = () => {
           <div className="mt-6 p-4 bg-secondary/50 rounded-lg">
             <p className="text-xs text-muted-foreground mb-2">Demo Accounts:</p>
             <div className="text-xs space-y-1">
-              <p>User: user@demo.com</p>
-              <p>Agent: agent@demo.com</p>
-              <p>Admin: admin@demo.com</p>
-              <p className="text-muted-foreground mt-1">Password: demo123</p>
+              <p>Admin: pratikverma9691@gmail.com</p>
+              <p>Agent: srijan@gmail.com</p>
+              <p>User: choi@gmail.com</p>
+              <p className="text-muted-foreground mt-1">Password: Deadpool@123</p>
             </div>
           </div>
         </Card>

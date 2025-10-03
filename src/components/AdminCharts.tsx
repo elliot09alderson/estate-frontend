@@ -94,12 +94,34 @@ const AdminCharts: React.FC<AdminChartsProps> = ({ data }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-background/95 backdrop-blur-sm border rounded-lg shadow-lg p-3">
-          <p className="font-medium">{`${label}`}</p>
+          {label && <p className="font-medium">{`${label}`}</p>}
           {payload.map((entry: any, index: number) => (
             <p key={index} style={{ color: entry.color }} className="text-sm">
-              {`${entry.name}: ${entry.value}`}
+              {entry.payload?.name || entry.name || 'Unknown'}: {entry.value || entry.payload?.value || 0}
             </p>
           ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Custom pie tooltip component
+  const CustomPieTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      const total = categoryData.reduce((sum, item) => sum + item.value, 0);
+      const percentage = ((data.value / total) * 100).toFixed(1);
+
+      return (
+        <div className="bg-background/95 backdrop-blur-sm border rounded-lg shadow-lg p-3">
+          <p className="font-medium text-sm">{data.name}</p>
+          <p className="text-sm" style={{ color: payload[0].color }}>
+            Count: {data.value}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {percentage}% of total
+          </p>
         </div>
       );
     }
@@ -227,7 +249,7 @@ const AdminCharts: React.FC<AdminChartsProps> = ({ data }) => {
                 );
               })}
             </Pie>
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<CustomPieTooltip />} />
             <Legend
               verticalAlign="bottom"
               height={36}

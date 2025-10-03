@@ -12,12 +12,17 @@ import {
   EyeOff,
   Filter,
   User,
-  Building
+  Building,
+  Clock,
+  Dot,
+  MoreVertical,
+  Reply
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Select,
   SelectContent,
@@ -32,9 +37,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 
 interface Message {
   _id: string;
@@ -170,176 +181,233 @@ const MyMessages = () => {
     msg.message.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.abs(now.getTime() - date.getTime()) / 36e5;
+
+    if (diffInHours < 24) {
+      return formatDistanceToNow(date, { addSuffix: true });
+    } else {
+      return format(date, 'MMM dd');
+    }
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-3xl font-bold mb-8">My Messages</h1>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold">Messages</h1>
+            <p className="text-sm text-muted-foreground mt-1">Manage your property inquiries</p>
+          </div>
+          <Badge variant="outline" className="px-3 py-1">
+            {stats.unread} unread
+          </Badge>
+        </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Messages</CardTitle>
-              <MessageCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
-            </CardContent>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Card className="p-4 border-l-4 border-l-primary">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground">Total Messages</p>
+                <p className="text-2xl font-bold">{stats.total}</p>
+              </div>
+              <MessageCircle className="w-5 h-5 text-primary" />
+            </div>
           </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Unread</CardTitle>
-              <Mail className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-primary">{stats.unread}</div>
-            </CardContent>
+
+          <Card className="p-4 border-l-4 border-l-green-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground">Unread</p>
+                <p className="text-2xl font-bold">{stats.unread}</p>
+              </div>
+              <Mail className="w-5 h-5 text-green-500" />
+            </div>
           </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Read</CardTitle>
-              <Eye className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.read}</div>
-            </CardContent>
+
+          <Card className="p-4 border-l-4 border-l-blue-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground">Read</p>
+                <p className="text-2xl font-bold">{stats.read}</p>
+              </div>
+              <Eye className="w-5 h-5 text-blue-500" />
+            </div>
           </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Archived</CardTitle>
-              <Archive className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.archived}</div>
-            </CardContent>
+
+          <Card className="p-4 border-l-4 border-l-orange-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground">Archived</p>
+                <p className="text-2xl font-bold">{stats.archived}</p>
+              </div>
+              <Archive className="w-5 h-5 text-orange-500" />
+            </div>
           </Card>
         </div>
 
-        {/* Filters and Search */}
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-                <Input
-                  placeholder="Search messages..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Select value={filter} onValueChange={setFilter}>
-                <SelectTrigger className="w-full md:w-[180px]">
-                  <SelectValue placeholder="Filter messages" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Messages</SelectItem>
-                  <SelectItem value="unread">Unread</SelectItem>
-                  <SelectItem value="read">Read</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Search and Filter */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Search messages, contacts, or properties..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 border bg-background"
+            />
+          </div>
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-full sm:w-[140px] border bg-background">
+              <SelectValue placeholder="Filter" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="unread">Unread</SelectItem>
+              <SelectItem value="read">Read</SelectItem>
+              <SelectItem value="archived">Archived</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Messages List */}
         {filteredMessages.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No messages found</h3>
-              <p className="text-muted-foreground">
-                {filter === 'all' ? 'You haven\'t received any messages yet.' : `No ${filter} messages.`}
-              </p>
-            </CardContent>
-          </Card>
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="p-4 bg-muted/30 rounded-full mb-4">
+              <MessageCircle className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-medium mb-2">No messages found</h3>
+            <p className="text-sm text-muted-foreground max-w-sm">
+              {filter === 'all' ? 'You haven\'t received any messages yet.' : `No ${filter} messages.`}
+            </p>
+          </div>
         ) : (
-          <div className="space-y-4">
-            {filteredMessages.map((message) => (
+          <div className="space-y-3">
+            {filteredMessages.map((message, index) => (
               <motion.div
                 key={message._id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
               >
-                <Card
-                  className={`cursor-pointer hover:shadow-lg transition-all ${
-                    !message.isRead ? 'border-primary' : ''
+                <div
+                  className={`group relative bg-background border rounded-xl p-4 hover:shadow-lg hover:shadow-primary/5 transition-all duration-200 cursor-pointer ${
+                    !message.isRead
+                      ? 'border-primary/50 bg-primary/[0.02]'
+                      : 'border-border/50 hover:border-border'
                   }`}
                   onClick={() => viewMessageDetails(message)}
                 >
-                  <CardContent className="p-4 md:p-6">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2 flex-wrap">
-                          {!message.isRead && (
-                            <Badge variant="default" className="text-xs">New</Badge>
-                          )}
-                          <h3 className="font-semibold text-base md:text-lg truncate">{message.senderName}</h3>
-                          {message.isArchived && (
-                            <Badge variant="outline" className="text-xs">
-                              <Archive className="w-3 h-3 mr-1" />
-                              Archived
-                            </Badge>
-                          )}
+                  {/* Unread Indicator */}
+                  {!message.isRead && (
+                    <div className="absolute top-4 left-0 w-1 h-8 bg-primary rounded-r-full" />
+                  )}
+
+                  <div className="flex items-start gap-4">
+                    {/* Avatar */}
+                    <Avatar className="h-10 w-10 border-2 border-primary/10">
+                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-medium text-sm">
+                        {message.senderName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-4 mb-2">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold text-foreground truncate">
+                              {message.senderName}
+                            </h3>
+                            {!message.isRead && (
+                              <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Building className="w-3 h-3" />
+                            <span className="truncate">{message.propertyTitle}</span>
+                          </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground mb-2">
-                          <span className="flex items-center gap-1 truncate">
-                            <Mail className="w-4 h-4 flex-shrink-0" />
-                            <span className="truncate">{message.senderEmail}</span>
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Phone className="w-4 h-4 flex-shrink-0" />
-                            {message.senderPhone}
-                          </span>
-                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="text-xs text-muted-foreground whitespace-nowrap">
+                            {formatTimeAgo(message.createdAt)}
+                          </div>
 
-                        <div className="flex items-center gap-2 mb-3">
-                          <Building className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                          <span className="text-sm font-medium truncate">{message.propertyTitle}</span>
-                        </div>
-
-                        <p className="text-muted-foreground line-clamp-2 text-sm">{message.message}</p>
-
-                        <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
-                          <Calendar className="w-3 h-3 flex-shrink-0" />
-                          <span className="truncate">{format(new Date(message.createdAt), 'PPP')}</span>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={(e) => {
+                                e.stopPropagation();
+                                markAsRead(message._id);
+                              }}>
+                                <Eye className="w-4 h-4 mr-2" />
+                                Mark as read
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => {
+                                e.stopPropagation();
+                                toggleArchive(message._id);
+                              }}>
+                                <Archive className="w-4 h-4 mr-2" />
+                                {message.isArchived ? 'Unarchive' : 'Archive'}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteMessage(message._id);
+                                }}
+                                className="text-destructive"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
 
-                      <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleArchive(message._id);
-                          }}
-                          className="h-8 w-8 sm:h-10 sm:w-10"
-                        >
-                          <Archive className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteMessage(message._id);
-                          }}
-                          className="h-8 w-8 sm:h-10 sm:w-10"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                      {/* Message Preview */}
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                        {message.message}
+                      </p>
+
+                      {/* Contact Info */}
+                      <div className="flex flex-wrap items-center gap-4 text-xs">
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                          <Mail className="w-3 h-3" />
+                          <span className="truncate max-w-[150px]">{message.senderEmail}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                          <Phone className="w-3 h-3" />
+                          <span>{message.senderPhone}</span>
+                        </div>
+                        {message.isArchived && (
+                          <Badge variant="outline" className="text-xs">
+                            Archived
+                          </Badge>
+                        )}
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -350,56 +418,79 @@ const MyMessages = () => {
       <Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
         <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Message Details</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageCircle className="w-5 h-5" />
+              Message Details
+            </DialogTitle>
             <DialogDescription className="sr-only">
               Details of the selected message
             </DialogDescription>
           </DialogHeader>
           {selectedMessage && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">From</label>
-                  <p className="font-medium break-words">{selectedMessage.senderName}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Email</label>
-                  <p className="font-medium break-all text-sm">{selectedMessage.senderEmail}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Phone</label>
-                  <p className="font-medium">{selectedMessage.senderPhone}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Date</label>
-                  <p className="font-medium text-sm">
-                    {format(new Date(selectedMessage.createdAt), 'PPPp')}
-                  </p>
+            <div className="space-y-6">
+              {/* Sender Info */}
+              <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg">
+                <Avatar className="h-12 w-12 border-2 border-primary/20">
+                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-medium">
+                    {selectedMessage.senderName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg">{selectedMessage.senderName}</h3>
+                  <div className="flex flex-col gap-1 mt-1">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Mail className="w-4 h-4" />
+                      <span>{selectedMessage.senderEmail}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Phone className="w-4 h-4" />
+                      <span>{selectedMessage.senderPhone}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Clock className="w-4 h-4" />
+                      <span>{format(new Date(selectedMessage.createdAt), 'PPPp')}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
+              {/* Property Info */}
+              <div className="p-4 border rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Building className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-muted-foreground">Property Inquiry</span>
+                </div>
+                <p className="font-medium">{selectedMessage.propertyTitle}</p>
+              </div>
+
+              {/* Message */}
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Property</label>
-                <p className="font-medium break-words">{selectedMessage.propertyTitle}</p>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Message</label>
-                <div className="bg-muted/50 p-4 rounded-lg mt-2">
-                  <p className="whitespace-pre-wrap break-words">{selectedMessage.message}</p>
+                <h4 className="font-medium mb-3">Message</h4>
+                <div className="bg-muted/30 p-4 rounded-lg border-l-4 border-l-primary/50">
+                  <p className="whitespace-pre-wrap break-words leading-relaxed">{selectedMessage.message}</p>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
+              {/* Actions */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
                 <Button
-                  variant="outline"
                   onClick={() => {
                     window.location.href = `mailto:${selectedMessage.senderEmail}?subject=Re: ${selectedMessage.propertyTitle}`;
                   }}
-                  className="w-full sm:w-auto"
+                  className="flex-1"
                 >
-                  <Mail className="w-4 h-4 mr-2" />
+                  <Reply className="w-4 h-4 mr-2" />
                   Reply via Email
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    window.location.href = `tel:${selectedMessage.senderPhone}`;
+                  }}
+                  className="flex-1"
+                >
+                  <Phone className="w-4 h-4 mr-2" />
+                  Call
                 </Button>
                 <Button
                   variant="outline"
@@ -407,18 +498,9 @@ const MyMessages = () => {
                     toggleArchive(selectedMessage._id);
                     setDetailsModalOpen(false);
                   }}
-                  className="w-full sm:w-auto"
                 >
                   <Archive className="w-4 h-4 mr-2" />
                   {selectedMessage.isArchived ? 'Unarchive' : 'Archive'}
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => deleteMessage(selectedMessage._id)}
-                  className="w-full sm:w-auto"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
                 </Button>
               </div>
             </div>
