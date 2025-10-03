@@ -38,6 +38,9 @@ import {
   Store,
   TrendingUp,
   Trash2,
+  X,
+  CheckCircle,
+  Loader2,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -110,6 +113,12 @@ const AddProperty = () => {
   const [selectedState, setSelectedState] = useState<string>("");
   const [selectedCity, setSelectedCity] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{
+    current: number;
+    total: number;
+    currentFile: string;
+    stage: 'uploading' | 'creating' | 'completed';
+  }>({ current: 0, total: 0, currentFile: '', stage: 'uploading' });
   const [locationDetecting, setLocationDetecting] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -324,61 +333,66 @@ const AddProperty = () => {
 
     try {
       setIsUploading(true);
+      setUploadProgress({
+        current: 0,
+        total: selectedImages.length,
+        currentFile: 'Preparing upload...',
+        stage: 'uploading'
+      });
 
-      console.log("=== STARTING PROPERTY UPLOAD ===");
+      console.log("=== STARTING OPTIMIZED PARALLEL UPLOAD ===");
       console.log("Timestamp:", new Date().toISOString());
       console.log("Images to upload:", selectedImages.length);
       console.log("User Agent:", navigator.userAgent);
       console.log("Connection:", (navigator as any).connection?.effectiveType || 'Unknown');
-      console.log("==============================");
+      console.log("===========================================");
 
-      toast.success("Uploading images...");
+      // Get API configuration once (not per file)
+      const isProduction = window.location.hostname.includes('vercel.app') ||
+                          window.location.hostname.includes('ontend') ||
+                          import.meta.env.PROD;
 
-      // Step 1: Upload all images first and collect URLs
-      const uploadPromises = selectedImages.map(async (file) => {
+      const baseURL = import.meta.env.VITE_API_BASE_URL ||
+        (isProduction
+          ? 'https://estate-backend-th8i.onrender.com/api'
+          : 'http://localhost:3001/api'
+        );
+      const uploadURL = `${baseURL}/properties/upload`;
+
+      console.log(`📡 Upload URL: ${uploadURL}`);
+      console.log(`🏭 Production detected: ${isProduction}`);
+
+      // Single health check for all uploads
+      try {
+        console.log('🔍 Testing API connectivity once...');
+        const testResponse = await fetch(uploadURL.replace('/properties/upload', '/health'), {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token') || localStorage.getItem('token')}`
+          }
+        });
+        console.log('🔍 Health check:', testResponse.ok ? '✅ PASSED' : '❌ FAILED');
+      } catch (healthError) {
+        console.error('🔍 Health check failed:', healthError);
+      }
+
+      toast.success("Starting parallel upload...");
+
+      // Step 1: Upload all images in parallel with progress tracking
+      let completedUploads = 0;
+
+      const uploadPromises = selectedImages.map(async (file, index) => {
         const formData = new FormData();
         formData.append('images', file);
 
         try {
-          console.log(`🔄 Uploading image: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+          console.log(`🚀 [${index + 1}/${selectedImages.length}] Uploading: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
 
-          // Get API base URL with better production detection
-          const isProduction = window.location.hostname.includes('vercel.app') ||
-                              window.location.hostname.includes('ontend') ||
-                              import.meta.env.PROD;
-
-          const baseURL = import.meta.env.VITE_API_BASE_URL ||
-            (isProduction
-              ? 'https://estate-backend-th8i.onrender.com/api'
-              : 'http://localhost:3001/api'
-            );
-          const uploadURL = `${baseURL}/properties/upload`;
-
-          console.log(`📡 Upload URL: ${uploadURL}`);
-          console.log(`🌐 Network status: ${navigator.onLine ? 'ONLINE' : 'OFFLINE'}`);
-          console.log(`🔧 Environment: ${import.meta.env.MODE} (DEV: ${import.meta.env.DEV}, PROD: ${import.meta.env.PROD})`);
-          console.log(`🏭 Production detected: ${isProduction}`);
-          console.log(`🌍 Current origin: ${window.location.origin}`);
-          console.log(`🌍 Hostname: ${window.location.hostname}`);
-          console.log(`📱 Device info: ${navigator.userAgent}`);
-
-          // Test basic connectivity to the API endpoint
-          try {
-            console.log('🔍 Testing API connectivity...');
-            const testResponse = await fetch(uploadURL.replace('/properties/upload', '/health'), {
-              method: 'GET',
-              headers: {
-                'Authorization': `Bearer ${localStorage.getItem('auth_token') || localStorage.getItem('token')}`
-              }
-            });
-            console.log('🔍 Health check response:', {
-              status: testResponse.status,
-              ok: testResponse.ok,
-              headers: Object.fromEntries(testResponse.headers.entries())
-            });
-          } catch (healthError) {
-            console.error('🔍 Health check failed:', healthError);
-          }
+          // Update current file being processed
+          setUploadProgress(prev => ({
+            ...prev,
+            currentFile: `Uploading ${file.name}...`
+          }));
 
           const response = await fetch(uploadURL, {
             method: 'POST',
@@ -388,42 +402,48 @@ const AddProperty = () => {
             }
           });
 
-          console.log(`📤 Upload response for ${file.name}:`, {
-            status: response.status,
-            statusText: response.statusText,
-            url: response.url,
-            headers: Object.fromEntries(response.headers.entries())
-          });
-
           if (!response.ok) {
             const errorText = await response.text().catch(() => 'Unable to read error text');
-            console.error(`❌ Upload failed for ${file.name}:`, errorText);
+            console.error(`❌ [${index + 1}/${selectedImages.length}] Failed: ${file.name} - ${response.status} ${response.statusText}`);
             throw new Error(`Upload failed: ${response.status} ${response.statusText} - ${errorText}`);
           }
 
           const result = await response.json();
-          console.log(`✅ Upload success for ${file.name}:`, result);
 
-          if (result.success && result.data && result.data.images) {
-            return result.data.images[0]; // Return the first uploaded image URL
+          if (!result.success || !result.data?.images?.[0]) {
+            console.error(`❌ [${index + 1}/${selectedImages.length}] Invalid response for: ${file.name}`);
+            throw new Error('Invalid upload response format');
           }
-          throw new Error('Invalid upload response');
+
+          // Update progress when upload completes
+          completedUploads++;
+          setUploadProgress(prev => ({
+            ...prev,
+            current: completedUploads,
+            currentFile: `Uploaded ${file.name}`
+          }));
+
+          console.log(`✅ [${index + 1}/${selectedImages.length}] Success: ${file.name}`);
+          return result.data.images[0];
         } catch (error) {
-          console.error(`💥 Image upload error for ${file.name}:`, {
-            name: error.name,
-            message: error.message,
-            stack: error.stack,
-            fileSize: file.size,
-            fileType: file.type,
-            networkOnline: navigator.onLine
-          });
+          console.error(`💥 [${index + 1}/${selectedImages.length}] Error: ${file.name} -`, error.message);
           throw error;
         }
       });
 
-      // Wait for all uploads to complete
+      // Wait for all uploads to complete in parallel
       const uploadedImageUrls = await Promise.all(uploadPromises);
-      console.log('All images uploaded:', uploadedImageUrls);
+      console.log(`🎉 All ${selectedImages.length} images uploaded successfully in parallel!`);
+
+      // Update progress to property creation stage
+      setUploadProgress(prev => ({
+        ...prev,
+        current: prev.total,
+        currentFile: 'Creating property...',
+        stage: 'creating'
+      }));
+
+      toast.success(`${selectedImages.length} images uploaded! Creating property...`);
 
       // Step 2: Create property with real image URLs
       const propertyData = {
@@ -461,6 +481,14 @@ const AddProperty = () => {
       const response = await createProperty(propertyData as any).unwrap();
 
       console.log("Property created successfully:", response.data?._id);
+
+      // Mark as completed
+      setUploadProgress(prev => ({
+        ...prev,
+        currentFile: 'Completed successfully!',
+        stage: 'completed'
+      }));
+
       toast.success("Property created successfully with all images!");
 
       // Reset form and redirect
@@ -534,6 +562,7 @@ const AddProperty = () => {
       }
 
       setIsUploading(false);
+      setUploadProgress({ current: 0, total: 0, currentFile: '', stage: 'uploading' });
     }
   };
 
@@ -613,6 +642,114 @@ const AddProperty = () => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Upload Progress Modal */}
+          {isUploading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="bg-card border border-border rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-foreground">
+                    {uploadProgress.stage === 'uploading' && 'Uploading Images'}
+                    {uploadProgress.stage === 'creating' && 'Creating Property'}
+                    {uploadProgress.stage === 'completed' && 'Upload Complete'}
+                  </h3>
+
+                  {uploadProgress.stage !== 'completed' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsUploading(false);
+                        setUploadProgress({ current: 0, total: 0, currentFile: '', stage: 'uploading' });
+                      }}
+                      className="p-2 hover:bg-muted rounded-lg transition-colors"
+                      title="Dismiss (upload will continue in background)"
+                    >
+                      <X className="w-4 h-4 text-muted-foreground" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="space-y-4">
+                  {/* Progress Bar */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span>
+                        {uploadProgress.stage === 'uploading' &&
+                          `${uploadProgress.current}/${uploadProgress.total} images`
+                        }
+                        {uploadProgress.stage === 'creating' && 'Finalizing...'}
+                        {uploadProgress.stage === 'completed' && 'Done!'}
+                      </span>
+                      <span>
+                        {uploadProgress.stage === 'uploading' &&
+                          `${Math.round((uploadProgress.current / uploadProgress.total) * 90)}%`
+                        }
+                        {uploadProgress.stage === 'creating' && '95%'}
+                        {uploadProgress.stage === 'completed' && '100%'}
+                      </span>
+                    </div>
+
+                    <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full"
+                        initial={{ width: 0 }}
+                        animate={{
+                          width: uploadProgress.stage === 'uploading'
+                            ? `${(uploadProgress.current / uploadProgress.total) * 90}%`
+                            : uploadProgress.stage === 'creating'
+                            ? '95%'
+                            : '100%'
+                        }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Current File */}
+                  <div className="flex items-center space-x-3">
+                    {uploadProgress.stage === 'uploading' && (
+                      <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                    )}
+                    {uploadProgress.stage === 'creating' && (
+                      <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                    )}
+                    {uploadProgress.stage === 'completed' && (
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                    )}
+
+                    <span className="text-sm text-foreground truncate">
+                      {uploadProgress.currentFile || 'Preparing...'}
+                    </span>
+                  </div>
+
+                  {/* Completed Stage Actions */}
+                  {uploadProgress.stage === 'completed' && (
+                    <div className="pt-2">
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setIsUploading(false);
+                          setUploadProgress({ current: 0, total: 0, currentFile: '', stage: 'uploading' });
+                        }}
+                        className="w-full"
+                        size="sm"
+                      >
+                        Close
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
