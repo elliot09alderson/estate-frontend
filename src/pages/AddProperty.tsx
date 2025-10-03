@@ -340,27 +340,83 @@ const AddProperty = () => {
         formData.append('images', file);
 
         try {
-          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/properties/upload`, {
+          console.log(`🔄 Uploading image: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+
+          // Get API base URL with better production detection
+          const isProduction = window.location.hostname.includes('vercel.app') ||
+                              window.location.hostname.includes('ontend') ||
+                              import.meta.env.PROD;
+
+          const baseURL = import.meta.env.VITE_API_BASE_URL ||
+            (isProduction
+              ? 'https://estate-backend-th8i.onrender.com/api'
+              : 'http://localhost:3001/api'
+            );
+          const uploadURL = `${baseURL}/properties/upload`;
+
+          console.log(`📡 Upload URL: ${uploadURL}`);
+          console.log(`🌐 Network status: ${navigator.onLine ? 'ONLINE' : 'OFFLINE'}`);
+          console.log(`🔧 Environment: ${import.meta.env.MODE} (DEV: ${import.meta.env.DEV}, PROD: ${import.meta.env.PROD})`);
+          console.log(`🏭 Production detected: ${isProduction}`);
+          console.log(`🌍 Current origin: ${window.location.origin}`);
+          console.log(`🌍 Hostname: ${window.location.hostname}`);
+          console.log(`📱 Device info: ${navigator.userAgent}`);
+
+          // Test basic connectivity to the API endpoint
+          try {
+            console.log('🔍 Testing API connectivity...');
+            const testResponse = await fetch(uploadURL.replace('/properties/upload', '/health'), {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('auth_token') || localStorage.getItem('token')}`
+              }
+            });
+            console.log('🔍 Health check response:', {
+              status: testResponse.status,
+              ok: testResponse.ok,
+              headers: Object.fromEntries(testResponse.headers.entries())
+            });
+          } catch (healthError) {
+            console.error('🔍 Health check failed:', healthError);
+          }
+
+          const response = await fetch(uploadURL, {
             method: 'POST',
             body: formData,
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+              'Authorization': `Bearer ${localStorage.getItem('auth_token') || localStorage.getItem('token')}`
             }
           });
 
+          console.log(`📤 Upload response for ${file.name}:`, {
+            status: response.status,
+            statusText: response.statusText,
+            url: response.url,
+            headers: Object.fromEntries(response.headers.entries())
+          });
+
           if (!response.ok) {
-            throw new Error(`Upload failed: ${response.status}`);
+            const errorText = await response.text().catch(() => 'Unable to read error text');
+            console.error(`❌ Upload failed for ${file.name}:`, errorText);
+            throw new Error(`Upload failed: ${response.status} ${response.statusText} - ${errorText}`);
           }
 
           const result = await response.json();
-          console.log('Upload result:', result);
+          console.log(`✅ Upload success for ${file.name}:`, result);
 
           if (result.success && result.data && result.data.images) {
             return result.data.images[0]; // Return the first uploaded image URL
           }
           throw new Error('Invalid upload response');
         } catch (error) {
-          console.error('Image upload failed:', error);
+          console.error(`💥 Image upload error for ${file.name}:`, {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+            fileSize: file.size,
+            fileType: file.type,
+            networkOnline: navigator.onLine
+          });
           throw error;
         }
       });
@@ -448,7 +504,35 @@ const AddProperty = () => {
       }
 
       console.log("Final error message to user:", errorMessage);
+
+      // Show detailed error for debugging (especially on mobile)
+      const detailedError = `
+🔍 ERROR DETAILS:
+• Status: ${error?.status || 'No status'}
+• Code: ${error?.code || 'No code'}
+• Message: ${error?.message || 'No message'}
+• URL: ${error?.config?.url || 'No URL'}
+• Method: ${error?.config?.method || 'No method'}
+• Timeout: ${error?.code === 'ECONNABORTED' ? 'YES' : 'NO'}
+• Network: ${navigator.onLine ? 'ONLINE' : 'OFFLINE'}
+• User Agent: ${navigator.userAgent.slice(0, 50)}...
+• Base URL: ${error?.config?.baseURL || 'No base URL'}
+      `.trim();
+
+      console.error("DETAILED ERROR FOR DEBUGGING:", detailedError);
+
+      // Show user-friendly error
       toast.error(errorMessage);
+
+      // Also show technical details for developers (only in development or when needed)
+      if (process.env.NODE_ENV === 'development' || error?.status === undefined) {
+        setTimeout(() => {
+          toast.error(`Technical Details: ${error?.code || 'Unknown'} | ${error?.status || 'No Status'} | Check console for more info`, {
+            duration: 10000
+          });
+        }, 1000);
+      }
+
       setIsUploading(false);
     }
   };

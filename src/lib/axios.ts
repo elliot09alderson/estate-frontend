@@ -1,6 +1,27 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+// Determine API base URL with better production detection
+const isProduction = window.location.hostname.includes('vercel.app') ||
+                    window.location.hostname.includes('ontend') ||
+                    import.meta.env.PROD;
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||
+  (isProduction
+    ? 'https://estate-backend-th8i.onrender.com/api'  // Production fallback
+    : 'http://localhost:3001/api'  // Development fallback
+  );
+
+// Log the API configuration for debugging
+console.log('🔗 API Configuration:', {
+  hostname: window.location.hostname,
+  mode: import.meta.env.MODE,
+  isDev: import.meta.env.DEV,
+  isProd: import.meta.env.PROD,
+  isProductionDetected: isProduction,
+  envVar: import.meta.env.VITE_API_BASE_URL,
+  finalURL: API_BASE_URL,
+  allEnvVars: Object.keys(import.meta.env).filter(key => key.startsWith('VITE_'))
+});
 
 const api = axios.create({
   baseURL: API_BASE_URL,
