@@ -57,33 +57,49 @@ const Properties = () => {
   const [searchParams] = useSearchParams();
   const initialSearch = searchParams.get("search") || "";
 
-  // Get cached location and set as default search if available and no initial search
-  const getCachedLocationSearch = () => {
+  // Get cached location for default search term
+  const getDefaultSearchTerm = () => {
     if (initialSearch) return initialSearch;
 
-    const cachedLocation = locationService.getCachedLocation();
-    if (cachedLocation) {
-      // Create search term from city and state
-      const locationParts = [cachedLocation.city, cachedLocation.state].filter(Boolean);
-      return locationParts.join(", ");
+    try {
+      // First check what's actually in localStorage
+      const rawLocationData = localStorage.getItem('userLocation');
+      console.log('Raw localStorage userLocation:', rawLocationData);
+
+      const cachedLocation = locationService.getCachedLocation();
+      console.log('Cached location from service:', cachedLocation);
+
+      if (cachedLocation) {
+        console.log('City:', cachedLocation.city);
+        console.log('State:', cachedLocation.state);
+        console.log('Pincode:', cachedLocation.pincode);
+
+        const locationParts = [cachedLocation.city, cachedLocation.state].filter(Boolean);
+        const searchTerm = locationParts.join(", ");
+        console.log('Generated search term:', searchTerm);
+        return searchTerm;
+      } else {
+        console.log('No cached location found');
+      }
+    } catch (error) {
+      console.error('Error getting cached location:', error);
     }
     return "";
   };
 
-  const [searchTerm, setSearchTerm] = useState(getCachedLocationSearch());
+  const defaultSearchTerm = getDefaultSearchTerm();
+  console.log('Default search term:', defaultSearchTerm); // Debug log
+
+  const [searchTerm, setSearchTerm] = useState(defaultSearchTerm);
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 10000000]);
   const [tempPriceRange, setTempPriceRange] = useState([0, 10000000]);
   const [isFiltering, setIsFiltering] = useState(false);
   const [allProperties, setAllProperties] = useState<any[]>([]);
-  const [filters, setFilters] = useState<PropertyFilters>(() => {
-    const cachedLocationSearch = getCachedLocationSearch();
-    return {
-      page: 1,
-      limit: 12,
-      ...(initialSearch && { location: initialSearch }),
-      ...(!initialSearch && cachedLocationSearch && { location: cachedLocationSearch }),
-    };
+  const [filters, setFilters] = useState<PropertyFilters>({
+    page: 1,
+    limit: 12,
+    ...(defaultSearchTerm && { location: defaultSearchTerm }),
   });
 
   // Debounce only search values (price will be handled on commit)
@@ -95,6 +111,23 @@ const Properties = () => {
     showPrompt: showLocationPrompt,
     skipLocation,
   } = useLocation();
+
+  // Debug location hook state
+  console.log('useLocation state:', {
+    userLocation,
+    showLocationPrompt,
+    locationPromptShown: localStorage.getItem('locationPromptShown'),
+    userLocationInStorage: localStorage.getItem('userLocation')
+  });
+
+  // Force clear location data to test prompt (temporary for debugging)
+  useEffect(() => {
+    // Clear location-related localStorage items to force prompt to show
+    localStorage.removeItem('locationPromptShown');
+    localStorage.removeItem('userLocation');
+    localStorage.removeItem('locationTimestamp');
+    console.log('Cleared location localStorage items');
+  }, []);
 
   const { isAuthenticated, user } = useAuthState();
   const dispatch = useAppDispatch();
@@ -113,12 +146,12 @@ const Properties = () => {
     threshold: 0,
   });
 
-  // Show toast when using cached location data
+  // Show toast notification when using cached location
   useEffect(() => {
-    const cachedLocation = locationService.getCachedLocation();
-    if (cachedLocation && !initialSearch && searchTerm) {
+    if (!initialSearch && defaultSearchTerm) {
       toast.success("Using your saved location for search", {
-        description: `Searching properties in ${searchTerm}`,
+        description: `Searching properties in ${defaultSearchTerm}`,
+        duration: 3000,
       });
     }
   }, []); // Run only once on mount

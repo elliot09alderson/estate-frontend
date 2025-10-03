@@ -210,7 +210,9 @@ const AddProperty = () => {
                   setValue("address", addressParts.join(", "));
                 }
 
-                toast.success("Location auto-detected! You can modify if needed.");
+                toast.success("Location auto-detected! You can modify if needed.", {
+                  duration: 3000
+                });
               }
             } catch (error) {
               console.error("Geocoding error:", error);
