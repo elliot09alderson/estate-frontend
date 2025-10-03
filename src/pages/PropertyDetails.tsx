@@ -108,6 +108,39 @@ const PropertyDetails = () => {
     }
   };
 
+  const handleShare = async () => {
+    const property = propertyData?.data;
+    if (!property) return;
+
+    const shareData = {
+      title: property.title,
+      text: `Check out this ${property.listingType === 'sale' ? 'property for sale' : 'rental property'}: ${property.title}`,
+      url: window.location.href,
+    };
+
+    try {
+      // Check if Web Share API is supported
+      if (navigator.share) {
+        await navigator.share(shareData);
+        toast.success('Property shared successfully!');
+      } else {
+        // Fallback: Copy URL to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success('Property URL copied to clipboard!');
+      }
+    } catch (error: any) {
+      // If sharing was cancelled or failed, try clipboard fallback
+      if (error.name !== 'AbortError') {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          toast.success('Property URL copied to clipboard!');
+        } catch (clipboardError) {
+          toast.error('Failed to share property');
+        }
+      }
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-screen">
@@ -246,7 +279,7 @@ const PropertyDetails = () => {
                       : 'hover:scale-110'
                   }`} />
                 </Button>
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" onClick={handleShare}>
                   <Share2 className="w-4 h-4" />
                 </Button>
               </div>

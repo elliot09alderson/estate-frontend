@@ -176,35 +176,30 @@ const AdminFeedbacks = () => {
               {feedbacks.map((feedback) => (
                 <div
                   key={feedback._id}
-                  className="border border-border rounded-lg p-4 hover:bg-secondary/50 transition-colors"
+                  className="border border-border rounded-lg p-4 hover:bg-secondary/50 transition-colors relative"
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-semibold">{feedback.subject}</h4>
-                        <Badge variant={getStatusVariant(feedback.status)} className="flex items-center gap-1">
-                          {getStatusIcon(feedback.status)}
-                          {feedback.status}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                        <span>{feedback.userName}</span>
-                        <span>•</span>
-                        <span>{feedback.userEmail}</span>
-                        {feedback.rating && (
-                          <>
-                            <span>•</span>
-                            <div className="flex items-center gap-1">
-                              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                              <span>{feedback.rating}/5</span>
-                            </div>
-                          </>
-                        )}
-                      </div>
+                  <div className="mb-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h4 className="font-semibold">{feedback.subject}</h4>
+                      <Badge variant={getStatusVariant(feedback.status)} className="flex items-center gap-1">
+                        {getStatusIcon(feedback.status)}
+                        {feedback.status}
+                      </Badge>
                     </div>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap ml-4">
-                      {formatDate(feedback.createdAt)}
-                    </span>
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                      <span>{feedback.userName}</span>
+                      <span>•</span>
+                      <span>{feedback.userEmail}</span>
+                      {feedback.rating && (
+                        <>
+                          <span>•</span>
+                          <div className="flex items-center gap-1">
+                            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                            <span>{feedback.rating}/5</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
 
                   <p className="text-sm mb-3">{feedback.message}</p>
@@ -216,20 +211,27 @@ const AdminFeedbacks = () => {
                     </div>
                   )}
 
-                  {!feedback.adminResponse && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setRespondDialog({
-                        open: true,
-                        feedbackId: feedback._id,
-                        subject: feedback.subject
-                      })}
-                    >
-                      <Send className="w-4 h-4 mr-2" />
-                      Respond
-                    </Button>
-                  )}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      {!feedback.adminResponse && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setRespondDialog({
+                            open: true,
+                            feedbackId: feedback._id,
+                            subject: feedback.subject
+                          })}
+                        >
+                          <Send className="w-4 h-4 mr-2" />
+                          Respond
+                        </Button>
+                      )}
+                    </div>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {formatDate(feedback.createdAt)}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>

@@ -324,6 +324,14 @@ const AddProperty = () => {
 
     try {
       setIsUploading(true);
+
+      console.log("=== STARTING PROPERTY UPLOAD ===");
+      console.log("Timestamp:", new Date().toISOString());
+      console.log("Images to upload:", selectedImages.length);
+      console.log("User Agent:", navigator.userAgent);
+      console.log("Connection:", (navigator as any).connection?.effectiveType || 'Unknown');
+      console.log("==============================");
+
       toast.success("Uploading images...");
 
       // Step 1: Upload all images first and collect URLs
@@ -389,8 +397,14 @@ const AddProperty = () => {
         images: uploadedImageUrls // Real uploaded image URLs
       };
 
+      console.log("=== PROPERTY CREATION SUCCESS ===");
+      console.log("Timestamp:", new Date().toISOString());
+      console.log("Images uploaded:", uploadedImageUrls.length);
+      console.log("===============================");
+
       const response = await createProperty(propertyData as any).unwrap();
 
+      console.log("Property created successfully:", response.data?._id);
       toast.success("Property created successfully with all images!");
 
       // Reset form and redirect
@@ -406,9 +420,34 @@ const AddProperty = () => {
       navigate("/properties", { replace: true });
 
     } catch (error: any) {
-      console.error("Property creation error:", error);
-      const errorMessage =
-        error?.data?.message || error?.message || "Failed to create property";
+      console.error("=== PROPERTY CREATION ERROR (Frontend) ===");
+      console.error("Timestamp:", new Date().toISOString());
+      console.error("Full Error Object:", error);
+      console.error("Error Status:", error?.status);
+      console.error("Error Data:", error?.data);
+      console.error("Error Message:", error?.message);
+      console.error("Error Stack:", error?.stack);
+      console.error("Response Headers:", error?.response?.headers);
+      console.error("========================================");
+
+      // Extract the most detailed error message possible
+      let errorMessage = "Failed to create property. Please try again.";
+
+      if (error?.data?.message) {
+        errorMessage = error.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.data?.error) {
+        errorMessage = `Upload Error: ${error.data.error}`;
+      } else if (error?.status === 413) {
+        errorMessage = "File too large. Please reduce image sizes and try again.";
+      } else if (error?.status === 408) {
+        errorMessage = "Upload timeout. Please check your connection and try again.";
+      } else if (error?.status === 500) {
+        errorMessage = "Server error. Please try again in a few moments.";
+      }
+
+      console.log("Final error message to user:", errorMessage);
       toast.error(errorMessage);
       setIsUploading(false);
     }

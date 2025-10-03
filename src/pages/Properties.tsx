@@ -120,14 +120,6 @@ const Properties = () => {
     userLocationInStorage: localStorage.getItem('userLocation')
   });
 
-  // Force clear location data to test prompt (temporary for debugging)
-  useEffect(() => {
-    // Clear location-related localStorage items to force prompt to show
-    localStorage.removeItem('locationPromptShown');
-    localStorage.removeItem('userLocation');
-    localStorage.removeItem('locationTimestamp');
-    console.log('Cleared location localStorage items');
-  }, []);
 
   const { isAuthenticated, user } = useAuthState();
   const dispatch = useAppDispatch();

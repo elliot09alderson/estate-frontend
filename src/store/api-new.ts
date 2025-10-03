@@ -498,10 +498,10 @@ export const estateApi = createApi({
 
     getAllFeedbacks: builder.query<
       ApiSuccessResponse<PaginatedData<Feedback>>,
-      { page?: number; limit?: number }
+      { page?: number; limit?: number; status?: string }
     >({
       query: (params) => ({
-        url: "/admin/feedbacks",
+        url: "/api/feedback/admin/all",
         method: "GET",
         params,
       }),
@@ -525,7 +525,7 @@ export const estateApi = createApi({
       { id: string; adminResponse: string; status?: "reviewed" | "resolved" }
     >({
       query: ({ id, adminResponse, status }) => ({
-        url: `/admin/feedbacks/${id}/respond`,
+        url: `/api/feedback/admin/${id}/respond`,
         method: "PUT",
         data: { adminResponse, status },
       }),
