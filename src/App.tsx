@@ -15,6 +15,8 @@ import AddProperty from "./pages/AddProperty";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
+import Portfolio from "./pages/Portfolio";
+import PublicPortfolio from "./pages/PublicPortfolio";
 import Favorites from "./pages/Favorites";
 import MyTours from "./pages/MyTours";
 import AgentTours from "./pages/AgentTours";
@@ -48,6 +50,7 @@ const App = () => (
                 <Route index element={<Index />} />
                 <Route path="properties" element={<Properties />} />
                 <Route path="properties/:id" element={<PropertyDetails />} />
+                <Route path="agent/:agentId" element={<PublicPortfolio />} />
                 
                 {/* Protected routes - require authentication */}
                 <Route
@@ -106,7 +109,15 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 />
-                
+                <Route
+                  path="portfolio"
+                  element={
+                    <ProtectedRoute roles={['agent', 'admin']}>
+                      <Portfolio />
+                    </ProtectedRoute>
+                  }
+                />
+
                 {/* Admin only routes */}
                 <Route
                   path="admin"

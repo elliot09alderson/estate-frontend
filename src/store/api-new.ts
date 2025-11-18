@@ -118,6 +118,23 @@ export interface Activity {
   updatedAt: string;
 }
 
+export interface Message {
+  _id: string;
+  propertyId: {
+    _id: string;
+    title: string;
+    images: string[];
+  };
+  propertyTitle: string;
+  senderName: string;
+  senderEmail: string;
+  senderPhone: string;
+  message: string;
+  isRead: boolean;
+  isArchived: boolean;
+  createdAt: string;
+}
+
 interface ApiSuccessResponse<T> {
   success: true;
   message?: string;
@@ -137,7 +154,7 @@ interface PaginatedData<T> {
 export const estateApi = createApi({
   reducerPath: "estateApi",
   baseQuery: axiosBaseQuery(),
-  tagTypes: ["Auth", "Property", "User", "Feedback", "Activity", "Stats"],
+  tagTypes: ["Auth", "Property", "User", "Feedback", "Activity", "Stats", "Message"],
   endpoints: (builder) => ({
     login: builder.mutation<
       ApiSuccessResponse<{ user: User; token: string }>,
@@ -338,6 +355,19 @@ export const estateApi = createApi({
         method: "PATCH",
       }),
       invalidatesTags: ["Property"],
+    }),
+
+    trackPropertyView: builder.mutation<
+      ApiSuccessResponse<{ views: number }>,
+      string
+    >({
+      query: (id) => ({
+        url: `/properties/${id}/track-view`,
+        method: "POST",
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: "Property" as const, id },
+      ],
     }),
 
     uploadPropertyImages: builder.mutation<
@@ -681,6 +711,78 @@ export const estateApi = createApi({
       }),
       providesTags: ["Property"],
     }),
+
+    // Message endpoints
+    getMyMessages: builder.query<ApiSuccessResponse<Message[]>, void>({
+      query: () => ({
+        url: "/messages/my-messages",
+        method: "GET",
+      }),
+      providesTags: ["Message"],
+    }),
+
+    getMessageStats: builder.query<
+      ApiSuccessResponse<{ total: number; unread: number; archived: number }>,
+      void
+    >({
+      query: () => ({
+        url: "/messages/stats",
+        method: "GET",
+      }),
+      providesTags: ["Message"],
+    }),
+
+    getMessage: builder.query<ApiSuccessResponse<Message>, string>({
+      query: (id) => ({
+        url: `/messages/${id}`,
+        method: "GET",
+      }),
+      providesTags: (_result, _error, id) => [
+        { type: "Message" as const, id },
+      ],
+    }),
+
+    markMessageAsRead: builder.mutation<ApiSuccessResponse<Message>, string>({
+      query: (id) => ({
+        url: `/messages/${id}/read`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Message"],
+    }),
+
+    toggleMessageArchive: builder.mutation<ApiSuccessResponse<Message>, string>({
+      query: (id) => ({
+        url: `/messages/${id}/archive`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Message"],
+    }),
+
+    deleteMessage: builder.mutation<ApiSuccessResponse<null>, string>({
+      query: (id) => ({
+        url: `/messages/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Message"],
+    }),
+
+    sendMessage: builder.mutation<
+      ApiSuccessResponse<Message>,
+      {
+        propertyId: string;
+        message: string;
+        senderName?: string;
+        senderEmail?: string;
+        senderPhone?: string;
+      }
+    >({
+      query: (messageData) => ({
+        url: "/messages/send",
+        method: "POST",
+        data: messageData,
+      }),
+      invalidatesTags: ["Message"],
+    }),
   }),
 });
 
@@ -702,6 +804,7 @@ export const {
   useUpdatePropertyMutation,
   useDeletePropertyMutation,
   useTogglePropertyStatusMutation,
+  useTrackPropertyViewMutation,
   useUploadPropertyImagesMutation,
   useGetDashboardStatsQuery,
   useGetAdminPropertiesQuery,
@@ -732,4 +835,11 @@ export const {
   useScheduleTourMutation,
   useUpdateTourStatusMutation,
   useGetAgentToursQuery,
+  useGetMyMessagesQuery,
+  useGetMessageStatsQuery,
+  useGetMessageQuery,
+  useMarkMessageAsReadMutation,
+  useToggleMessageArchiveMutation,
+  useDeleteMessageMutation,
+  useSendMessageMutation,
 } = estateApi;

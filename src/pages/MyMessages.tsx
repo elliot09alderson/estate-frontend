@@ -46,126 +46,67 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { format, formatDistanceToNow } from 'date-fns';
-
-interface Message {
-  _id: string;
-  propertyId: {
-    _id: string;
-    title: string;
-    images: string[];
-  };
-  propertyTitle: string;
-  senderId?: {
-    _id: string;
-    name: string;
-    email: string;
-  };
-  senderName: string;
-  senderEmail: string;
-  senderPhone: string;
-  message: string;
-  isRead: boolean;
-  isArchived: boolean;
-  createdAt: string;
-}
-
-// Mock data - no API calls
-const mockMessages: Message[] = [
-  {
-    _id: '1',
-    propertyId: {
-      _id: 'prop1',
-      title: 'Luxury Apartment in Downtown',
-      images: ['https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400']
-    },
-    propertyTitle: 'Luxury Apartment in Downtown',
-    senderName: 'John Smith',
-    senderEmail: 'john.smith@example.com',
-    senderPhone: '+91 9876543210',
-    message: 'Hi, I am interested in this property. Could you please share more details about the pricing and availability?',
-    isRead: false,
-    isArchived: false,
-    createdAt: new Date().toISOString()
-  },
-  {
-    _id: '2',
-    propertyId: {
-      _id: 'prop2',
-      title: 'Modern Villa with Pool',
-      images: ['https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=400']
-    },
-    propertyTitle: 'Modern Villa with Pool',
-    senderName: 'Sarah Johnson',
-    senderEmail: 'sarah.j@example.com',
-    senderPhone: '+91 9123456789',
-    message: 'Hello! I would like to schedule a viewing for this villa. When would be a good time?',
-    isRead: true,
-    isArchived: false,
-    createdAt: new Date(Date.now() - 86400000).toISOString()
-  },
-  {
-    _id: '3',
-    propertyId: {
-      _id: 'prop3',
-      title: 'Commercial Space for Rent',
-      images: ['https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400']
-    },
-    propertyTitle: 'Commercial Space for Rent',
-    senderName: 'Mike Wilson',
-    senderEmail: 'mike.wilson@example.com',
-    senderPhone: '+91 9988776655',
-    message: 'I am looking for a commercial space for my business. Is this property still available?',
-    isRead: true,
-    isArchived: true,
-    createdAt: new Date(Date.now() - 172800000).toISOString()
-  }
-];
-
-const mockStats = {
-  total: 3,
-  unread: 1,
-  read: 2,
-  archived: 1
-};
+import {
+  useGetMyMessagesQuery,
+  useGetMessageStatsQuery,
+  useMarkMessageAsReadMutation,
+  useToggleMessageArchiveMutation,
+  useDeleteMessageMutation,
+  Message as MessageType
+} from '@/store/api-new';
+import { toast as sonnerToast } from 'sonner';
 
 const MyMessages = () => {
-  const [messages] = useState<Message[]>(mockMessages);
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [selectedMessage, setSelectedMessage] = useState<MessageType | null>(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
-  const [stats] = useState(mockStats);
 
   const { toast } = useToast();
 
-  const markAsRead = (messageId: string) => {
-    // Simulate marking as read - no API call
-    toast({
-      title: 'Message marked as read',
-      description: 'Message has been marked as read successfully'
-    });
+  // Fetch messages and stats from API
+  const { data: messagesData, isLoading: messagesLoading, isError: messagesError } = useGetMyMessagesQuery();
+  const { data: statsData, isLoading: statsLoading } = useGetMessageStatsQuery();
+
+  // Mutations
+  const [markAsReadMutation] = useMarkMessageAsReadMutation();
+  const [toggleArchiveMutation] = useToggleMessageArchiveMutation();
+  const [deleteMessageMutation] = useDeleteMessageMutation();
+
+  const messages = messagesData?.data || [];
+  const stats = statsData?.data || { total: 0, unread: 0, archived: 0 };
+
+  const markAsRead = async (messageId: string) => {
+    try {
+      await markAsReadMutation(messageId).unwrap();
+      sonnerToast.success('Message marked as read');
+    } catch (error) {
+      sonnerToast.error('Failed to mark message as read');
+    }
   };
 
-  const toggleArchive = (messageId: string) => {
-    // Simulate archiving - no API call
-    toast({
-      title: 'Message archived',
-      description: 'Message has been archived successfully'
-    });
+  const toggleArchive = async (messageId: string) => {
+    try {
+      await toggleArchiveMutation(messageId).unwrap();
+      sonnerToast.success('Message archived');
+    } catch (error) {
+      sonnerToast.error('Failed to archive message');
+    }
   };
 
-  const deleteMessage = (messageId: string) => {
+  const deleteMessage = async (messageId: string) => {
     if (!confirm('Are you sure you want to delete this message?')) return;
 
-    // Simulate deletion - no API call
-    toast({
-      title: 'Message deleted',
-      description: 'Message has been deleted successfully'
-    });
-    setDetailsModalOpen(false);
+    try {
+      await deleteMessageMutation(messageId).unwrap();
+      sonnerToast.success('Message deleted successfully');
+      setDetailsModalOpen(false);
+    } catch (error) {
+      sonnerToast.error('Failed to delete message');
+    }
   };
 
-  const viewMessageDetails = (message: Message) => {
+  const viewMessageDetails = (message: MessageType) => {
     setSelectedMessage(message);
     setDetailsModalOpen(true);
 
@@ -174,12 +115,26 @@ const MyMessages = () => {
     }
   };
 
-  const filteredMessages = messages.filter(msg =>
-    msg.senderName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    msg.senderEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    msg.propertyTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    msg.message.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter messages based on filter and search term
+  const filteredMessages = messages.filter(msg => {
+    // Apply filter
+    if (filter === 'unread' && msg.isRead) return false;
+    if (filter === 'read' && !msg.isRead) return false;
+    if (filter === 'archived' && !msg.isArchived) return false;
+
+    // Apply search
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        msg.senderName.toLowerCase().includes(searchLower) ||
+        msg.senderEmail.toLowerCase().includes(searchLower) ||
+        msg.propertyTitle.toLowerCase().includes(searchLower) ||
+        msg.message.toLowerCase().includes(searchLower)
+      );
+    }
+
+    return true;
+  });
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
@@ -192,6 +147,39 @@ const MyMessages = () => {
       return format(date, 'MMM dd');
     }
   };
+
+  // Loading state
+  if (messagesLoading || statsLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-3 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-3"></div>
+          <p className="text-sm text-muted-foreground">Loading messages...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (messagesError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-3">
+            <MessageCircle className="w-6 h-6 text-destructive" />
+          </div>
+          <h3 className="text-lg font-semibold mb-2">Failed to Load Messages</h3>
+          <p className="text-sm text-muted-foreground mb-4">Something went wrong. Please try again.</p>
+          <Button onClick={() => window.location.reload()} variant="outline" className="rounded-full px-6">
+            Reload Page
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Calculate read count
+  const readCount = messages.filter(msg => msg.isRead && !msg.isArchived).length;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -237,7 +225,7 @@ const MyMessages = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">Read</p>
-                <p className="text-2xl font-bold">{stats.read}</p>
+                <p className="text-2xl font-bold">{readCount}</p>
               </div>
               <Eye className="w-5 h-5 text-blue-500" />
             </div>

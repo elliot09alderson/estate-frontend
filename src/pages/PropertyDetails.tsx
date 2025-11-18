@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -51,6 +51,7 @@ import ImageZoomModal from '@/components/ImageZoomModal';
 import { useGetPropertyByIdQuery, useToggleFavoriteMutation } from '@/store/api-new';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { formatPriceWithWords } from '@/lib/priceFormatter';
 
 // Amenity icon mapping
 const getAmenityIcon = (feature: string) => {
@@ -86,6 +87,11 @@ const PropertyDetails = () => {
   const [userRating, setUserRating] = useState<{rating: number, review: string} | null>(null);
   const [imageZoomOpen, setImageZoomOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  // Scroll to top when component mounts or property ID changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [id]);
 
   const { data: propertyData, isLoading, error } = useGetPropertyByIdQuery(id || '');
   const [toggleFavorite] = useToggleFavoriteMutation();
@@ -286,9 +292,14 @@ const PropertyDetails = () => {
             </div>
 
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div className="flex items-center gap-2 text-3xl font-bold text-primary">
-                <IndianRupee className="w-7 h-7" />
-                {property.price.toLocaleString()}
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2 text-3xl font-bold text-primary">
+                  <IndianRupee className="w-7 h-7" />
+                  {formatPriceWithWords(property.price).formatted.replace('₹', '')}
+                </div>
+                <span className="text-sm text-muted-foreground ml-9">
+                  {formatPriceWithWords(property.price).words}
+                </span>
               </div>
 
               {/* Property stats - responsive grid layout */}
