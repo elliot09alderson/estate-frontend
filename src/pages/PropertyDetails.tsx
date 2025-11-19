@@ -168,6 +168,15 @@ const PropertyDetails = () => {
 
   const property = propertyData.data;
 
+  // Get agent's current phone number from profile if populated, otherwise use property's stored phone
+  const agentPhone = typeof property.agentId === 'object' && property.agentId?.phone
+    ? property.agentId.phone
+    : property.agentPhone;
+
+  const agentEmail = typeof property.agentId === 'object' && property.agentId?.email
+    ? property.agentId.email
+    : property.agentPhone;
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Image Gallery */}
@@ -400,7 +409,13 @@ const PropertyDetails = () => {
           </Card>
 
           {/* Feedback Form */}
-          <FeedbackForm propertyId={id} />
+          <FeedbackForm
+            propertyId={id}
+            onSuccess={() => {
+              // Refresh property data to get updated ratings
+              window.location.reload();
+            }}
+          />
         </div>
 
         {/* Sidebar */}
@@ -425,17 +440,17 @@ const PropertyDetails = () => {
             <div className="space-y-3 mb-6">
               <div className="flex items-center">
                 <Phone className="w-4 h-4 mr-3 text-muted-foreground" />
-                <span className="text-sm">{property.agentPhone}</span>
+                <span className="text-sm">{agentPhone}</span>
               </div>
               <div className="flex items-center">
                 <Mail className="w-4 h-4 mr-3 text-muted-foreground" />
-                <span className="text-sm">{property.agentId?.email || property.agentPhone}</span>
+                <span className="text-sm">{agentEmail}</span>
               </div>
             </div>
 
             <div className="space-y-3">
               <Button className="btn-gradient-primary w-full" asChild>
-                <a href={`tel:${property.agentPhone}`}>
+                <a href={`tel:${agentPhone}`}>
                   <Phone className="w-4 h-4 mr-2" />
                   Call Agent
                 </a>
@@ -475,7 +490,7 @@ const PropertyDetails = () => {
             open={contactModalOpen}
             onClose={() => setContactModalOpen(false)}
             agentName={property.agentName}
-            agentEmail={property.agentId?.email || property.agentPhone}
+            agentEmail={agentEmail}
             propertyTitle={property.title}
             propertyId={property._id}
           />

@@ -531,7 +531,7 @@ export const estateApi = createApi({
       { page?: number; limit?: number; status?: string }
     >({
       query: (params) => ({
-        url: "/api/feedback/admin/all",
+        url: "/admin/feedbacks",
         method: "GET",
         params,
       }),
@@ -555,7 +555,7 @@ export const estateApi = createApi({
       { id: string; adminResponse: string; status?: "reviewed" | "resolved" }
     >({
       query: ({ id, adminResponse, status }) => ({
-        url: `/api/feedback/admin/${id}/respond`,
+        url: `/admin/feedbacks/${id}/respond`,
         method: "PUT",
         data: { adminResponse, status },
       }),
@@ -591,7 +591,7 @@ export const estateApi = createApi({
       { propertyId?: string; subject: string; message: string; rating?: number }
     >({
       query: (feedbackData) => ({
-        url: "/feedbacks",
+        url: "/feedback",
         method: "POST",
         data: feedbackData,
       }),
@@ -603,7 +603,7 @@ export const estateApi = createApi({
       { page?: number; limit?: number }
     >({
       query: (params) => ({
-        url: "/feedbacks/my-feedbacks",
+        url: "/feedback/my-feedbacks",
         method: "GET",
         params,
       }),
@@ -612,7 +612,7 @@ export const estateApi = createApi({
 
     getFeedbackById: builder.query<ApiSuccessResponse<Feedback>, string>({
       query: (id) => ({
-        url: `/feedbacks/${id}`,
+        url: `/feedback/${id}`,
         method: "GET",
       }),
       providesTags: (_result, _error, id) => [
@@ -625,7 +625,7 @@ export const estateApi = createApi({
       { propertyId: string; page?: number; limit?: number }
     >({
       query: ({ propertyId, page, limit }) => ({
-        url: `/feedbacks/property/${propertyId}`,
+        url: `/feedback/property/${propertyId}`,
         method: "GET",
         params: { page, limit },
       }),
@@ -637,7 +637,7 @@ export const estateApi = createApi({
       string
     >({
       query: (propertyId) => ({
-        url: `/feedbacks/property/${propertyId}/rating`,
+        url: `/feedback/property/${propertyId}/rating`,
         method: "GET",
       }),
     }),
@@ -650,7 +650,7 @@ export const estateApi = createApi({
       }
     >({
       query: ({ id, data }) => ({
-        url: `/feedbacks/${id}`,
+        url: `/feedback/${id}`,
         method: "PUT",
         data,
       }),
@@ -659,7 +659,7 @@ export const estateApi = createApi({
 
     deleteFeedback: builder.mutation<ApiSuccessResponse<null>, string>({
       query: (id) => ({
-        url: `/feedbacks/${id}`,
+        url: `/feedback/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Feedback"],
@@ -713,7 +713,15 @@ export const estateApi = createApi({
     }),
 
     // Message endpoints
-    getMyMessages: builder.query<ApiSuccessResponse<Message[]>, void>({
+    getMyMessages: builder.query<
+      ApiSuccessResponse<{
+        messages: Message[];
+        total: number;
+        page: number;
+        totalPages: number;
+      }>,
+      void
+    >({
       query: () => ({
         url: "/messages/my-messages",
         method: "GET",

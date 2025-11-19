@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { Star, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useCreateFeedbackMutation } from '@/store/api-new';
-import { useToast } from '@/hooks/use-toast';
+import { toast as sonnerToast } from 'sonner';
 
 interface FeedbackFormProps {
   propertyId?: string;
@@ -13,87 +12,58 @@ interface FeedbackFormProps {
 }
 
 const FeedbackForm: React.FC<FeedbackFormProps> = ({ propertyId, onSuccess }) => {
-  const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
 
-  const { toast } = useToast();
   const [createFeedback, { isLoading }] = useCreateFeedbackMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!subject.trim() || !message.trim()) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
+    if (rating === 0) {
+      sonnerToast.error('Please select a rating');
       return;
     }
 
     try {
-      await createFeedback({
-        subject: subject.trim(),
-        message: message.trim(),
-        rating: rating > 0 ? rating : undefined,
+      const feedbackData: any = {
+        subject: 'Property Review',
+        rating,
         propertyId: propertyId || undefined,
-      }).unwrap();
+      };
 
-      toast({
-        title: "Feedback Submitted",
-        description: "Thank you for your feedback!",
-      });
+      // Only include message if it's not empty
+      if (message.trim()) {
+        feedbackData.message = message.trim();
+      } else {
+        feedbackData.message = 'No review provided';
+      }
 
-      setSubject('');
+      await createFeedback(feedbackData).unwrap();
+
+      sonnerToast.success('Thank you for your review!');
+
       setMessage('');
       setRating(0);
 
       if (onSuccess) {
         onSuccess();
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to submit feedback. Please try again.",
-        variant: "destructive",
-      });
+    } catch (error: any) {
+      sonnerToast.error(error?.data?.message || 'Failed to submit review. Please try again.');
     }
   };
 
   return (
     <Card className="card-elevated p-6">
-      <h3 className="text-lg font-semibold mb-4">Send Feedback</h3>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <h3 className="text-xl font-semibold mb-2">Rate This Property</h3>
+      <p className="text-sm text-muted-foreground mb-6">Share your experience with this property</p>
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className="block text-sm font-medium mb-2">Subject *</label>
-          <Input
-            placeholder="Brief description of your feedback"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            maxLength={200}
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Message *</label>
-          <Textarea
-            placeholder="Tell us more about your experience or suggestion..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            rows={5}
-            maxLength={1000}
-            required
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            {message.length}/1000 characters
-          </p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Rating (Optional)</label>
+          <label className="block text-sm font-medium mb-3">
+            Your Rating <span className="text-destructive">*</span>
+          </label>
           <div className="flex items-center gap-1">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
@@ -105,7 +75,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ propertyId, onSuccess }) =>
                 onClick={() => setRating(star)}
               >
                 <Star
-                  className={`w-8 h-8 ${
+                  className={`w-10 h-10 ${
                     (hoveredRating || rating) >= star
                       ? 'fill-yellow-400 text-yellow-400'
                       : 'text-gray-300'
@@ -114,14 +84,33 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ propertyId, onSuccess }) =>
               </button>
             ))}
             {rating > 0 && (
-              <span className="ml-2 text-sm text-muted-foreground">
-                {rating} out of 5
+              <span className="ml-3 text-sm font-medium text-foreground">
+                {rating} out of 5 stars
               </span>
             )}
           </div>
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <div>
+          <label className="block text-sm font-medium mb-2">Your Review (Optional)</label>
+          <Textarea
+            placeholder="Share details about your experience with this property..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            rows={4}
+            maxLength={500}
+            className="resize-none"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            {message.length}/500 characters
+          </p>
+        </div>
+
+        <Button
+          type="submit"
+          className="w-full btn-gradient-primary"
+          disabled={isLoading || rating === 0}
+        >
           {isLoading ? (
             <>
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
@@ -129,8 +118,8 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ propertyId, onSuccess }) =>
             </>
           ) : (
             <>
-              <Send className="w-4 h-4 mr-2" />
-              Submit Feedback
+              <Star className="w-4 h-4 mr-2" />
+              Submit Review
             </>
           )}
         </Button>

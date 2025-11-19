@@ -64,7 +64,7 @@ const ContactModal: React.FC<ContactModalProps> = ({
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('auth_token');  // Changed from 'token' to 'auth_token'
       const config = token ? {
         headers: { Authorization: `Bearer ${token}` }
       } : {};

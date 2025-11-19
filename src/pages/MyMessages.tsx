@@ -73,7 +73,8 @@ const MyMessages = () => {
   const [toggleArchiveMutation] = useToggleMessageArchiveMutation();
   const [deleteMessageMutation] = useDeleteMessageMutation();
 
-  const messages = messagesData?.data || [];
+  // Extract messages array from nested data structure
+  const messages = messagesData?.data?.messages || [];
   const stats = statsData?.data || { total: 0, unread: 0, archived: 0 };
 
   const markAsRead = async (messageId: string) => {

@@ -1,32 +1,66 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, Phone, MapPin, Camera, Save } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Camera, Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { useUpdateProfileMutation, useGetProfileQuery } from '@/store/api-new';
+import { toast as sonnerToast } from 'sonner';
 
 const Profile = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
+
+  // Fetch fresh profile data
+  const { data: profileData, isLoading: profileLoading } = useGetProfileQuery();
+
+  // Use profile data from query if available, otherwise use auth context
+  const profileUser = profileData?.data || user;
+
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: '',
-    location: '',
-    bio: '',
+    name: profileUser?.name || '',
+    phone: profileUser?.phone || '',
+    companyName: profileUser?.companyName || '',
   });
 
-  const handleSave = () => {
-    // In a real app, this would update the user profile
-    toast({
-      title: "Profile updated",
-      description: "Your profile has been successfully updated.",
-    });
-    setIsEditing(false);
+  const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
+
+  // Update form data when profile data changes
+  useEffect(() => {
+    if (profileUser) {
+      setFormData({
+        name: profileUser.name || '',
+        phone: profileUser.phone || '',
+        companyName: profileUser.companyName || '',
+      });
+    }
+  }, [profileUser]);
+
+  const handleSave = async () => {
+    try {
+      const updateData: any = {
+        name: formData.name,
+      };
+
+      // Only include phone if it's provided
+      if (formData.phone) {
+        updateData.phone = formData.phone;
+      }
+
+      // Only include companyName if user is agent/admin and it's provided
+      if ((profileUser?.role === 'agent' || profileUser?.role === 'admin') && formData.companyName) {
+        updateData.companyName = formData.companyName;
+      }
+
+      await updateProfile(updateData).unwrap();
+
+      sonnerToast.success('Profile updated successfully');
+      setIsEditing(false);
+    } catch (error: any) {
+      sonnerToast.error(error?.data?.message || 'Failed to update profile');
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -35,6 +69,18 @@ const Profile = () => {
       [e.target.name]: e.target.value
     }));
   };
+
+  // Show loading state
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-3 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-3"></div>
+          <p className="text-sm text-muted-foreground">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -62,9 +108,9 @@ const Profile = () => {
               <div className="text-center">
                 <div className="relative inline-block mb-4">
                   <Avatar className="w-24 h-24">
-                    <AvatarImage src={user?.avatar} alt={user?.name} />
+                    <AvatarImage src={profileUser?.avatar || undefined} alt={profileUser?.name} />
                     <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-                      {user?.name?.charAt(0).toUpperCase()}
+                      {profileUser?.name?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   {isEditing && (
@@ -76,18 +122,18 @@ const Profile = () => {
                     </Button>
                   )}
                 </div>
-                
-                <h2 className="text-xl font-semibold mb-1">{user?.name}</h2>
-                <p className="text-muted-foreground mb-4 capitalize">{user?.role}</p>
-                
+
+                <h2 className="text-xl font-semibold mb-1">{profileUser?.name}</h2>
+                <p className="text-muted-foreground mb-4 capitalize">{profileUser?.role}</p>
+
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center justify-center text-muted-foreground">
                     <Mail className="w-4 h-4 mr-2" />
-                    {user?.email}
+                    {profileUser?.email}
                   </div>
                   <div className="flex items-center justify-center text-muted-foreground">
                     <User className="w-4 h-4 mr-2" />
-                    Member since {new Date(user?.createdAt || '').getFullYear()}
+                    Member since {new Date(profileUser?.createdAt || '').getFullYear()}
                   </div>
                 </div>
               </div>
@@ -107,25 +153,17 @@ const Profile = () => {
                         value={formData.name}
                         onChange={handleInputChange}
                         placeholder="Enter your full name"
+                        required
                       />
                     ) : (
-                      <p className="p-3 bg-secondary rounded-lg">{formData.name || 'Not provided'}</p>
+                      <p className="p-3 bg-secondary rounded-lg">{profileUser?.name || 'Not provided'}</p>
                     )}
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium mb-2">Email Address</label>
-                    {isEditing ? (
-                      <Input
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        placeholder="Enter your email"
-                      />
-                    ) : (
-                      <p className="p-3 bg-secondary rounded-lg">{formData.email}</p>
-                    )}
+                    <p className="p-3 bg-secondary rounded-lg text-muted-foreground">{profileUser?.email}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Email cannot be changed</p>
                   </div>
                 </div>
 
@@ -137,54 +175,63 @@ const Profile = () => {
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        placeholder="Enter your phone number"
+                        placeholder="+91 9876543210"
                       />
                     ) : (
-                      <p className="p-3 bg-secondary rounded-lg">{formData.phone || 'Not provided'}</p>
+                      <p className="p-3 bg-secondary rounded-lg">{profileUser?.phone || 'Not provided'}</p>
                     )}
                   </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Location</label>
-                    {isEditing ? (
-                      <Input
-                        name="location"
-                        value={formData.location}
-                        onChange={handleInputChange}
-                        placeholder="Enter your location"
-                      />
-                    ) : (
-                      <p className="p-3 bg-secondary rounded-lg">{formData.location || 'Not provided'}</p>
-                    )}
-                  </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Bio</label>
-                  {isEditing ? (
-                    <textarea
-                      name="bio"
-                      value={formData.bio}
-                      onChange={handleInputChange}
-                      placeholder="Tell us about yourself..."
-                      className="w-full p-3 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-input resize-none text-foreground placeholder:text-muted-foreground"
-                      rows={3}
-                    />
-                  ) : (
-                    <p className="p-3 bg-secondary rounded-lg min-h-[80px]">
-                      {formData.bio || 'No bio provided'}
-                    </p>
+                  {(profileUser?.role === 'agent' || profileUser?.role === 'admin') && (
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Company Name</label>
+                      {isEditing ? (
+                        <Input
+                          name="companyName"
+                          value={formData.companyName}
+                          onChange={handleInputChange}
+                          placeholder="Enter company name"
+                        />
+                      ) : (
+                        <p className="p-3 bg-secondary rounded-lg">{profileUser?.companyName || 'Not provided'}</p>
+                      )}
+                    </div>
                   )}
                 </div>
 
                 {isEditing && (
                   <div className="flex justify-end space-x-3 pt-4">
-                    <Button variant="outline" onClick={() => setIsEditing(false)}>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditing(false);
+                        // Reset form data
+                        setFormData({
+                          name: profileUser?.name || '',
+                          phone: profileUser?.phone || '',
+                          companyName: profileUser?.companyName || '',
+                        });
+                      }}
+                      disabled={isUpdating}
+                    >
                       Cancel
                     </Button>
-                    <Button onClick={handleSave} className="btn-gradient-primary">
-                      <Save className="w-4 h-4 mr-2" />
-                      Save Changes
+                    <Button
+                      onClick={handleSave}
+                      className="btn-gradient-primary"
+                      disabled={isUpdating}
+                    >
+                      {isUpdating ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-4 h-4 mr-2" />
+                          Save Changes
+                        </>
+                      )}
                     </Button>
                   </div>
                 )}
@@ -193,7 +240,7 @@ const Profile = () => {
           </div>
 
           {/* Statistics for Agents */}
-          {user?.role === 'agent' && (
+          {profileUser?.role === 'agent' && (
             <Card className="card-elevated p-6">
               <h3 className="text-lg font-semibold mb-4">Agent Statistics</h3>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

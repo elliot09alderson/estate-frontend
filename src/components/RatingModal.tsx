@@ -61,7 +61,7 @@ const RatingModal: React.FC<RatingModalProps> = ({
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('auth_token');  // Changed from 'token' to 'auth_token'
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/ratings`,
         {
