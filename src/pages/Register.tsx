@@ -41,7 +41,7 @@ const Register = () => {
       await register(formData.email, formData.password, formData.name, formData.role);
       toast({
         title: "Account created successfully!",
-        description: "Welcome to RealEstate platform.",
+        description: "Welcome to Crimson Bricks platform.",
       });
       navigate('/');
     } catch (error) {
@@ -75,7 +75,7 @@ const Register = () => {
             <div className="w-10 h-10 btn-gradient-primary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
               <Home className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-2xl text-gradient-primary">RealEstate</span>
+            <span className="font-bold text-2xl text-gradient-primary">Crimson Bricks</span>
           </Link>
         </div>
 

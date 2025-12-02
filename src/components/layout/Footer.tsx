@@ -11,10 +11,11 @@ import {
   Instagram,
   Linkedin,
   Youtube,
-  Clock,
-  ChevronRight
+  ArrowRight,
+  Send
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 
 const Footer = () => {
@@ -37,246 +38,149 @@ const Footer = () => {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.5,
-        ease: "easeOut"
+        duration: 0.5
       }
     }
   };
 
   const socialLinks = [
-    { icon: Facebook, href: 'https://facebook.com', label: 'Facebook', color: 'hover:bg-blue-600' },
-    { icon: Twitter, href: 'https://twitter.com', label: 'Twitter', color: 'hover:bg-sky-500' },
-    { icon: Instagram, href: 'https://instagram.com', label: 'Instagram', color: 'hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500' },
-    { icon: Linkedin, href: 'https://linkedin.com', label: 'LinkedIn', color: 'hover:bg-blue-700' },
-    { icon: Youtube, href: 'https://youtube.com', label: 'YouTube', color: 'hover:bg-red-600' }
+    { icon: Facebook, href: 'https://facebook.com', label: 'Facebook', color: 'hover:text-blue-500' },
+    { icon: Twitter, href: 'https://twitter.com', label: 'Twitter', color: 'hover:text-sky-400' },
+    { icon: Instagram, href: 'https://instagram.com', label: 'Instagram', color: 'hover:text-pink-500' },
+    { icon: Linkedin, href: 'https://linkedin.com', label: 'LinkedIn', color: 'hover:text-blue-600' },
+    { icon: Youtube, href: 'https://youtube.com', label: 'YouTube', color: 'hover:text-red-500' }
   ];
 
   const quickLinks = [
-    { name: 'About Us', href: '/about' },
+    { name: 'Home', href: '/' },
     { name: 'Properties', href: '/properties' },
-    { name: 'Blog', href: '/blog' },
-    { name: 'Contact', href: '/contact' },
+    { name: 'About Us', href: '/about' },
+    { name: 'Contact Us', href: '/contact' },
+  ];
+
+  const legalLinks = [
     { name: 'Terms & Conditions', href: '/terms' },
-    { name: 'Privacy Policy', href: '/privacy' }
+    { name: 'Privacy Policy', href: '/privacy' },
+    { name: 'Return Policy', href: '/return-policy' },
   ];
 
   return (
-    <footer className="bg-gradient-to-b from-background to-secondary/20 border-t border-border">
+    <footer className="bg-slate-950 text-slate-200 border-t border-slate-800">
       <motion.div
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16"
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.1 }}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Company Info */}
-          <motion.div variants={itemVariants} className="space-y-4">
-            <div className="flex items-center space-x-2 group">
-              <motion.div
-                className="w-10 h-10 btn-gradient-primary rounded-lg flex items-center justify-center"
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+          {/* Brand Section */}
+          <motion.div variants={itemVariants} className="space-y-6">
+            <Link to="/" className="flex items-center space-x-2 group">
+              <div className="w-10 h-10 btn-gradient-primary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Home className="w-5 h-5 text-white" />
-              </motion.div>
-              <span className="font-bold text-2xl text-gradient-primary">RealEstate</span>
-            </div>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Your trusted partner in finding the perfect property. We make real estate simple, transparent, and accessible.
+              </div>
+              <span className="font-bold text-2xl text-white">Crimson Bricks</span>
+            </Link>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              Your trusted partner in finding the perfect property. We make real estate simple, transparent, and accessible for everyone.
             </p>
-
-            {/* Social Media Links */}
-            <div className="flex space-x-2 pt-4">
-              {socialLinks.map((social, index) => (
-                <motion.a
+            <div className="flex space-x-4">
+              {socialLinks.map((social) => (
+                <a
                   key={social.label}
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`w-10 h-10 rounded-lg bg-secondary/50 flex items-center justify-center transition-all duration-300 ${social.color} hover:text-white`}
-                  whileHover={{ scale: 1.1, y: -5 }}
-                  whileTap={{ scale: 0.95 }}
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.1 }}
+                  className={`text-slate-400 transition-colors duration-300 ${social.color}`}
                   aria-label={social.label}
                 >
                   <social.icon className="w-5 h-5" />
-                </motion.a>
+                </a>
               ))}
             </div>
           </motion.div>
 
           {/* Quick Links */}
-          <motion.div variants={itemVariants} className="space-y-4">
-            <h3 className="font-semibold text-lg">Quick Links</h3>
-            <ul className="space-y-2">
+          <motion.div variants={itemVariants} className="space-y-6">
+            <h3 className="font-semibold text-lg text-white">Quick Links</h3>
+            <ul className="space-y-3">
               {quickLinks.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-muted-foreground hover:text-foreground text-sm flex items-center group transition-colors"
+                    className="text-slate-400 hover:text-white hover:translate-x-1 transition-all duration-300 flex items-center group"
                   >
-                    <ChevronRight className="w-4 h-4 mr-1 transition-transform group-hover:translate-x-1" />
-                    <span>{link.name}</span>
+                    <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {link.name}
                   </Link>
                 </li>
               ))}
             </ul>
           </motion.div>
 
-          {/* Contact Info */}
-          <motion.div variants={itemVariants} className="space-y-4">
-            <h3 className="font-semibold text-lg">Contact Info</h3>
-            <div className="space-y-3">
-              <motion.div
-                className="flex items-start space-x-3 group"
-                whileHover={{ x: 5 }}
-              >
-                <MapPin className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                <div className="text-sm">
-                  <p className="font-medium">Office Address</p>
-                  <p className="text-muted-foreground">
-                    123 Business Avenue, Suite 100<br />
-                    New York, NY 10001<br />
-                    United States
-                  </p>
-                </div>
-              </motion.div>
-
-              <motion.div
-                className="flex items-center space-x-3 group"
-                whileHover={{ x: 5 }}
-              >
-                <Phone className="w-5 h-5 text-primary flex-shrink-0" />
-                <div className="text-sm">
-                  <p className="font-medium">Phone</p>
-                  <a href="tel:+1234567890" className="text-muted-foreground hover:text-foreground">
-                    +1 (234) 567-890
-                  </a>
-                </div>
-              </motion.div>
-
-              <motion.div
-                className="flex items-center space-x-3 group"
-                whileHover={{ x: 5 }}
-              >
-                <Mail className="w-5 h-5 text-primary flex-shrink-0" />
-                <div className="text-sm">
-                  <p className="font-medium">Email</p>
-                  <a href="mailto:info@realestate.com" className="text-muted-foreground hover:text-foreground">
-                    info@realestate.com
-                  </a>
-                </div>
-              </motion.div>
-
-              <motion.div
-                className="flex items-start space-x-3 group"
-                whileHover={{ x: 5 }}
-              >
-                <Clock className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                <div className="text-sm">
-                  <p className="font-medium">Business Hours</p>
-                  <p className="text-muted-foreground">
-                    Mon - Fri: 9:00 AM - 6:00 PM<br />
-                    Sat: 10:00 AM - 4:00 PM<br />
-                    Sun: Closed
-                  </p>
-                </div>
-              </motion.div>
-            </div>
+          {/* Legal Links */}
+          <motion.div variants={itemVariants} className="space-y-6">
+            <h3 className="font-semibold text-lg text-white">Legal</h3>
+            <ul className="space-y-3">
+              {legalLinks.map((link) => (
+                <li key={link.name}>
+                  <Link
+                    to={link.href}
+                    className="text-slate-400 hover:text-white hover:translate-x-1 transition-all duration-300 flex items-center group"
+                  >
+                    <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </motion.div>
 
-          {/* Map Section */}
-          <motion.div variants={itemVariants} className="space-y-4">
-            <h3 className="font-semibold text-lg">Find Us</h3>
-            <motion.div
-              className="relative rounded-lg overflow-hidden h-48 bg-secondary/50"
-              whileHover={{ scale: 1.02 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              {/* Map placeholder - Replace with actual map integration */}
-              <div className="w-full h-full bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1841902395577!2d-73.98823492346903!3d40.758011034710635!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c258fecf664df5%3A0x33d224a0d5dacca2!2sRockefeller%20Center!5e0!3m2!1sen!2sus!4v1703095842739!5m2!1sen!2sus"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  className="grayscale hover:grayscale-0 transition-all duration-300"
-                />
+          {/* Contact & Newsletter */}
+          <motion.div variants={itemVariants} className="space-y-6">
+            <h3 className="font-semibold text-lg text-white">Get in Touch</h3>
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3 text-slate-400">
+                <MapPin className="w-5 h-5 mt-0.5 text-primary" />
+                <span>Indira Nagar Chinimaya Hospital Road<br />Near Indira Nagar Metro Station</span>
               </div>
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent pointer-events-none"
-                initial={{ opacity: 0.5 }}
-                whileHover={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              />
-            </motion.div>
+              <div className="flex items-center space-x-3 text-slate-400">
+                <Phone className="w-5 h-5 text-primary" />
+                <span>+91 8770800807</span>
+              </div>
+              <div className="flex items-center space-x-3 text-slate-400">
+                <Mail className="w-5 h-5 text-primary" />
+                <span>info@crimsonbricks.com</span>
+              </div>
+            </div>
 
-            <Button
-              className="w-full btn-gradient-primary"
-              onClick={() => window.open('https://maps.google.com', '_blank')}
-            >
-              <MapPin className="w-4 h-4 mr-2" />
-              Get Directions
-            </Button>
+            <div className="pt-4">
+              <h4 className="text-sm font-medium text-white mb-3">Subscribe to our newsletter</h4>
+              <div className="flex gap-2">
+                <Input 
+                  placeholder="Email address" 
+                  className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-500 focus-visible:ring-primary"
+                />
+                <Button size="icon" className="btn-gradient-primary shrink-0">
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
           </motion.div>
         </div>
 
-        <Separator className="my-8" />
+        <Separator className="my-12 bg-slate-800" />
 
-        {/* Newsletter Section */}
         <motion.div
           variants={itemVariants}
-          className="text-center space-y-4 py-8"
+          className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500"
         >
-          <h3 className="text-2xl font-bold">Stay Updated</h3>
-          <p className="text-muted-foreground max-w-md mx-auto">
-            Subscribe to our newsletter for the latest property listings and real estate news.
-          </p>
-          <motion.div
-            className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            <Button className="btn-gradient-primary">
-              Subscribe
-            </Button>
-          </motion.div>
-        </motion.div>
-
-        <Separator className="my-8" />
-
-        {/* Copyright */}
-        <motion.div
-          variants={itemVariants}
-          className="text-center space-y-4"
-        >
-          <p className="text-sm text-muted-foreground">
-            © {currentYear} RealEstate. All rights reserved. | Made with ❤️ by Your Team
-          </p>
-          <div className="flex justify-center space-x-4 text-sm">
-            <Link to="/terms" className="text-muted-foreground hover:text-foreground">
-              Terms
-            </Link>
-            <span className="text-muted-foreground">•</span>
-            <Link to="/privacy" className="text-muted-foreground hover:text-foreground">
-              Privacy
-            </Link>
-            <span className="text-muted-foreground">•</span>
-            <Link to="/cookies" className="text-muted-foreground hover:text-foreground">
-              Cookies
-            </Link>
+          <p>© {currentYear} Crimson Bricks. All rights reserved.</p>
+          <div className="flex space-x-6">
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+            <Link to="/terms" className="hover:text-white transition-colors">Terms</Link>
+            <Link to="/sitemap" className="hover:text-white transition-colors">Sitemap</Link>
           </div>
         </motion.div>
       </motion.div>

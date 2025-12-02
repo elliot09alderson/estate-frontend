@@ -27,6 +27,10 @@ import AdminPropertyRequirements from "./pages/AdminPropertyRequirements";
 import MyMessages from "./pages/MyMessages";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
+import ReturnPolicy from "./pages/ReturnPolicy";
+import Terms from "./pages/Terms";
+import Contact from "./pages/Contact";
+import Privacy from "./pages/Privacy";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +55,10 @@ const App = () => (
                 <Route path="properties" element={<Properties />} />
                 <Route path="properties/:id" element={<PropertyDetails />} />
                 <Route path="agent/:agentId" element={<PublicPortfolio />} />
+                <Route path="return-policy" element={<ReturnPolicy />} />
+                <Route path="terms" element={<Terms />} />
+                <Route path="contact" element={<Contact />} />
+                <Route path="privacy" element={<Privacy />} />
                 
                 {/* Protected routes - require authentication */}
                 <Route

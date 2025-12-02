@@ -36,7 +36,7 @@ const PublicPortfolio = () => {
   );
 
   const allProperties = data?.data?.properties || [];
-  const agentInfo = allProperties.length > 0 ? allProperties[0].agentId : null;
+  const agentInfo = allProperties.length > 0 && typeof allProperties[0].agentId === 'object' ? allProperties[0].agentId : null;
 
   // Filter properties based on search and filters
   const filteredProperties = useMemo(() => {
@@ -71,7 +71,7 @@ const PublicPortfolio = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${agentInfo?.name}'s Portfolio - RealEstate`,
+          title: `${agentInfo?.name}'s Portfolio - Crimson Bricks`,
           text: `Check out ${agentInfo?.name}'s property listings!`,
           url: portfolioUrl,
         });

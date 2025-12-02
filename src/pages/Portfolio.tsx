@@ -76,7 +76,7 @@ const Portfolio = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${user?.name}'s Portfolio - RealEstate`,
+          title: `${user?.name}'s Portfolio - Crimson Bricks`,
           text: `Check out ${user?.name}'s property listings!`,
           url: portfolioUrl,
         });

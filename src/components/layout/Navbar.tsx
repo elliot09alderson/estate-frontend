@@ -85,7 +85,7 @@ const Navbar = () => {
             <div className="w-8 h-8 btn-gradient-primary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
               <Home className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-xl text-gradient-primary">RealEstate</span>
+            <span className="font-bold text-xl text-gradient-primary">Crimson Bricks</span>
           </Link>
 
           {/* Desktop Navigation */}
