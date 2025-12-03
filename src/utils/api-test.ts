@@ -1,14 +1,15 @@
+import { API_BASE_URL } from '../lib/axios';
+
 // Simple API connectivity test
 export const testApiConnection = async () => {
   try {
-    const response = await fetch('http://localhost:3001/api/health');
+    const response = await fetch(`${API_BASE_URL}/health`);
     const data = await response.json();
     console.log('API Connection Test:', data);
     return data;
   } catch (error) {
     console.error('API Connection Failed:', error);
-    console.log('Make sure backend is running on port 3001');
-    console.log('Backend should be configured for frontend on port 8080 (Vite default)');
+    console.log(`Make sure backend is running at ${API_BASE_URL}`);
     return null;
   }
 };

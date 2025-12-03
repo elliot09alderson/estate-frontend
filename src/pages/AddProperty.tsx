@@ -50,6 +50,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 import { useCreatePropertyMutation } from "@/store/api-new";
+import { API_BASE_URL } from "@/lib/axios";
 
 const propertySchema = z.object({
   title: z
@@ -348,19 +349,10 @@ const AddProperty = () => {
       console.log("===========================================");
 
       // Get API configuration once (not per file)
-      const isProduction = window.location.hostname.includes('vercel.app') ||
-                          window.location.hostname.includes('ontend') ||
-                          import.meta.env.PROD;
-
-      const baseURL = import.meta.env.VITE_API_BASE_URL ||
-        (isProduction
-          ? 'https://estate-backend-th8i.onrender.com/api'
-          : 'http://localhost:3001/api'
-        );
+      const baseURL = API_BASE_URL;
       const uploadURL = `${baseURL}/properties/upload`;
 
       console.log(`📡 Upload URL: ${uploadURL}`);
-      console.log(`🏭 Production detected: ${isProduction}`);
 
       // Single health check for all uploads
       try {

@@ -1,0 +1,16 @@
+[Unit]
+Description=Crimson Bricks Backend Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/estate-backend
+ExecStart=/usr/bin/node src/index.js
+Restart=on-failure
+# Environment variables can be set here or loaded from .env file
+# Environment=NODE_ENV=production
+# Environment=PORT=3001
+
+[Install]
+WantedBy=multi-user.target

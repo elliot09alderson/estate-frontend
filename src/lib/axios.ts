@@ -1,13 +1,11 @@
 import axios from 'axios';
 
 // Determine API base URL with better production detection
-const isProduction = window.location.hostname.includes('vercel.app') ||
-                    window.location.hostname.includes('ontend') ||
-                    import.meta.env.PROD;
+const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||
   (isProduction
-    ? 'https://estate-backend-th8i.onrender.com/api'  // Production fallback
+    ? 'https://crimsonbricks.com/api'  // Production fallback
     : 'http://localhost:3001/api'  // Development fallback
   );
 
