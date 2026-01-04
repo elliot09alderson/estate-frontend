@@ -142,8 +142,8 @@ const AgentTours = () => {
                               href={`mailto:${tour.buyerEmail}`}
                               className="flex items-center gap-1 text-sm hover:underline"
                             >
-                              <Mail className="h-3 w-3" />
-                              {tour.buyerEmail}
+                              <Mail className="h-3 w-3 flex-shrink-0" />
+                              <span className="break-all">{tour.buyerEmail}</span>
                             </a>
                           )}
                         </div>

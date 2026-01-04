@@ -47,6 +47,8 @@ export interface User {
   favorites: string[];
   licenseNumber?: string;
   companyName?: string;
+  averageRating?: number;
+  totalRatings?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -72,6 +74,8 @@ export interface Property {
         email: string;
         phone: string;
         avatar?: string;
+        averageRating?: number;
+        totalRatings?: number;
       };
   agentName: string;
   agentPhone: string;
@@ -81,6 +85,8 @@ export interface Property {
   rejectionReason?: string | null;
   isFeatured: boolean;
   views: number;
+  averageRating?: number;
+  totalRatings?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -386,14 +392,23 @@ export const estateApi = createApi({
 
     getDashboardStats: builder.query<
       ApiSuccessResponse<{
-        users: { total: number; agents: number; regularUsers: number };
+        users: { 
+          total: number; 
+          agents: number; 
+          regularUsers: number;
+          monthlyGrowth?: number[];
+        };
         properties: {
           total: number;
           pending: number;
           approved: number;
           rejected: number;
+          byCategory?: Record<string, number>;
+          byType?: Record<string, number>;
+          monthlyGrowth?: number[];
         };
         feedbacks: { total: number; pending: number };
+        monthlyData?: Array<{ month: string; users: number; properties: number }>;
       }>,
       void
     >({

@@ -26,6 +26,9 @@ import {
   useGetPropertiesQuery,
   useToggleFavoriteMutation,
 } from "@/store/api-new";
+// NOTE: react-window was removed to enable natural page scrolling.
+// Virtualization created an internal scroll container which felt unnatural.
+// For large datasets (1000+ items), consider re-enabling with window scroll mode.
 import { useAuthState, useAppDispatch } from "@/hooks/useRTKQuery";
 import { setUser } from "@/store/authSlice";
 import { toast } from "sonner";
@@ -98,7 +101,7 @@ const Properties = () => {
   const [allProperties, setAllProperties] = useState<any[]>([]);
   const [filters, setFilters] = useState<PropertyFilters>({
     page: 1,
-    limit: 12,
+    limit: 40,
     ...(defaultSearchTerm && { location: defaultSearchTerm }),
   });
 
@@ -111,6 +114,9 @@ const Properties = () => {
     showPrompt: showLocationPrompt,
     skipLocation,
   } = useLocation();
+
+  // Grid columns are now handled by Tailwind CSS responsive classes
+  // No need for manual window resize tracking
 
   // Debug location hook state
   console.log('useLocation state:', {
@@ -380,6 +386,155 @@ const Properties = () => {
     skipLocation();
   };
 
+  // Property Card Component for reuse
+  const PropertyCard = ({ property }: { property: any }) => (
+    <Link to={`/properties/${property._id}`} className="block h-full">
+      <Card className="overflow-hidden border border-border rounded-2xl hover:shadow-xl transition-all duration-300 group bg-card dark:bg-card h-full flex flex-col">
+        {/* Image Section */}
+        <div className="relative h-64 overflow-hidden flex-shrink-0 bg-muted dark:bg-muted/50">
+          <img
+            src={
+              property.images?.[0] ||
+              "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop"
+            }
+            alt={property.title}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.src =
+                "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop";
+            }}
+          />
+          <div className="absolute top-3 left-3">
+            <Badge
+              className={`text-[10px] font-bold px-2 py-1 ${
+                property.listingType === "sale"
+                  ? "bg-emerald-500 text-white"
+                  : "bg-orange-500 text-white"
+              }`}
+            >
+              {property.listingType === "sale"
+                ? "FOR SALE"
+                : "FOR RENT"}
+            </Badge>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`absolute top-3 right-3 rounded-full w-10 h-10 p-0 shadow-lg backdrop-blur-sm transition-all duration-300 flex items-center justify-center ${
+              user?.favorites?.includes(property._id)
+                ? "bg-red-500/90 hover:bg-red-500 text-white"
+                : "bg-white/90 hover:bg-white text-gray-600 hover:text-red-500"
+            }`}
+            onClick={(e) => handleToggleFavorite(property._id, e)}
+          >
+            <Heart
+              className={`w-4 h-4 transition-all duration-300 ${
+                user?.favorites?.includes(property._id)
+                  ? "fill-current scale-110"
+                  : "hover:scale-110"
+              }`}
+            />
+          </Button>
+          {/* Category Badge on Image */}
+          <div className="absolute bottom-3 left-3">
+            <Badge
+              variant="outline"
+              className="text-xs font-medium capitalize bg-background/95 border-border text-foreground"
+            >
+              {property.category}
+            </Badge>
+          </div>
+        </div>
+
+        {/* Content Section */}
+        <div className="flex-1 p-4 flex flex-col">
+          {/* Title & Location */}
+          <div className="mb-3">
+            <h3 className="font-bold text-lg mb-1.5 text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+              {property.title}
+            </h3>
+
+            {/* Star Rating */}
+            <div className="mb-2">
+              <StarRating
+                rating={property.averageRating || 0}
+                totalRatings={property.totalRatings || 0}
+                size="sm"
+                showCount={property.totalRatings > 0}
+              />
+            </div>
+
+            <div className="flex items-center text-muted-foreground text-sm">
+              <MapPin className="w-3.5 h-3.5 mr-1 flex-shrink-0" />
+              <span className="line-clamp-1">{property.location}</span>
+            </div>
+          </div>
+
+          {/* Property Details - In Row */}
+          <div className="flex items-center gap-4 mb-3 py-2 px-3 bg-muted/30 dark:bg-muted/20 rounded-lg">
+            {property.bedrooms !== null &&
+              property.bedrooms !== undefined && (
+                <div className="flex items-center gap-1.5">
+                  <Bed className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">
+                    {property.bedrooms}
+                  </span>
+                </div>
+              )}
+            {property.bathrooms !== null &&
+              property.bathrooms !== undefined && (
+                <div className="flex items-center gap-1.5">
+                  <Bath className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">
+                    {property.bathrooms}
+                  </span>
+                </div>
+              )}
+            {property.area && (
+              <div className="flex items-center gap-1.5">
+                <Square className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">
+                  {property.area} sqft
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Section */}
+          <div className="mt-auto pt-3 border-t border-border">
+            <div className="flex items-end justify-between">
+              <div>
+                <div className="text-xl font-bold text-foreground mb-0.5">
+                  ₹{Math.floor(property.price).toLocaleString()}
+                </div>
+                {property.category === "land" && property.area && (
+                  <div className="text-xs text-muted-foreground">
+                    ₹
+                    {Math.floor(
+                      property.price / property.area
+                    ).toLocaleString()}
+                    /sqft
+                  </div>
+                )}
+              </div>
+              <div className="text-right">
+                <div className="text-[10px] text-muted-foreground mb-0.5">
+                  Listed by
+                </div>
+                <div className="text-xs font-semibold text-foreground line-clamp-1">
+                  {property.agentName}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+    </Link>
+  );
+
+  // PropertyRow component was removed - using simple CSS grid instead
+  // This provides natural page scrolling with intersection observer for infinite scroll
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
@@ -636,164 +791,21 @@ const Properties = () => {
         </div>
       )}
 
-      {/* Property Grid - OYO Style */}
+      {/* Property Grid - Simple CSS Grid with Infinite Scroll */}
+      {/* Using Tailwind responsive classes for column layout */}
+      {/* Intersection observer (loadMoreRef) triggers loading more items when user scrolls near bottom */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {allProperties.map((property, index) => (
-          <motion.div
-            key={property._id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-          >
-            <Link to={`/properties/${property._id}`}>
-              <Card className="overflow-hidden border border-border rounded-2xl hover:shadow-xl transition-all duration-300 group bg-card dark:bg-card h-full flex flex-col">
-                {/* Image Section */}
-                <div className="relative h-64 overflow-hidden flex-shrink-0 bg-muted dark:bg-muted/50">
-                  <img
-                    src={
-                      property.images?.[0] ||
-                      "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop"
-                    }
-                    alt={property.title}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.src =
-                        "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop";
-                    }}
-                  />
-                  <div className="absolute top-3 left-3">
-                    <Badge
-                      className={`text-[10px] font-bold px-2 py-1 ${
-                        property.listingType === "sale"
-                          ? "bg-emerald-500 text-white"
-                          : "bg-orange-500 text-white"
-                      }`}
-                    >
-                      {property.listingType === "sale"
-                        ? "FOR SALE"
-                        : "FOR RENT"}
-                    </Badge>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={`absolute top-3 right-3 rounded-full w-10 h-10 p-0 shadow-lg backdrop-blur-sm transition-all duration-300 flex items-center justify-center ${
-                      user?.favorites?.includes(property._id)
-                        ? "bg-red-500/90 hover:bg-red-500 text-white"
-                        : "bg-white/90 hover:bg-white text-gray-600 hover:text-red-500"
-                    }`}
-                    onClick={(e) => handleToggleFavorite(property._id, e)}
-                  >
-                    <Heart
-                      className={`w-4 h-4 transition-all duration-300 ${
-                        user?.favorites?.includes(property._id)
-                          ? "fill-current scale-110"
-                          : "hover:scale-110"
-                      }`}
-                    />
-                  </Button>
-                  {/* Category Badge on Image */}
-                  <div className="absolute bottom-3 left-3">
-                    <Badge
-                      variant="outline"
-                      className="text-xs font-medium capitalize bg-background/95 border-border text-foreground"
-                    >
-                      {property.category}
-                    </Badge>
-                  </div>
-                </div>
-
-                {/* Content Section */}
-                <div className="flex-1 p-4 flex flex-col">
-                  {/* Title & Location */}
-                  <div className="mb-3">
-                    <h3 className="font-bold text-lg mb-1.5 text-foreground line-clamp-1 group-hover:text-primary transition-colors">
-                      {property.title}
-                    </h3>
-
-                    {/* Star Rating */}
-                    <div className="mb-2">
-                      <StarRating
-                        rating={property.averageRating || 0}
-                        totalRatings={property.totalRatings || 0}
-                        size="sm"
-                        showCount={property.totalRatings > 0}
-                      />
-                    </div>
-
-                    <div className="flex items-center text-muted-foreground text-sm">
-                      <MapPin className="w-3.5 h-3.5 mr-1 flex-shrink-0" />
-                      <span className="line-clamp-1">{property.location}</span>
-                    </div>
-                  </div>
-
-                  {/* Property Details - In Row */}
-                  <div className="flex items-center gap-4 mb-3 py-2 px-3 bg-muted/30 dark:bg-muted/20 rounded-lg">
-                    {property.bedrooms !== null &&
-                      property.bedrooms !== undefined && (
-                        <div className="flex items-center gap-1.5">
-                          <Bed className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm font-medium text-foreground">
-                            {property.bedrooms}
-                          </span>
-                        </div>
-                      )}
-                    {property.bathrooms !== null &&
-                      property.bathrooms !== undefined && (
-                        <div className="flex items-center gap-1.5">
-                          <Bath className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm font-medium text-foreground">
-                            {property.bathrooms}
-                          </span>
-                        </div>
-                      )}
-                    {property.area && (
-                      <div className="flex items-center gap-1.5">
-                        <Square className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm font-medium text-foreground">
-                          {property.area} sqft
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Bottom Section */}
-                  <div className="mt-auto pt-3 border-t border-border">
-                    <div className="flex items-end justify-between">
-                      <div>
-                        <div className="text-xl font-bold text-foreground mb-0.5">
-                          ₹{Math.floor(property.price).toLocaleString()}
-                        </div>
-                        {property.category === "land" && property.area && (
-                          <div className="text-xs text-muted-foreground">
-                            ₹
-                            {Math.floor(
-                              property.price / property.area
-                            ).toLocaleString()}
-                            /sqft
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <div className="text-[10px] text-muted-foreground mb-0.5">
-                          Listed by
-                        </div>
-                        <div className="text-xs font-semibold text-foreground line-clamp-1">
-                          {property.agentName}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </Link>
-          </motion.div>
+        {allProperties.map((property) => (
+          <PropertyCard key={property._id} property={property} />
         ))}
       </div>
 
-      {/* Infinite Scroll Loader */}
+      {/* Infinite Scroll Trigger - when this element comes into view, load more */}
+      <div ref={loadMoreRef} className="h-10" />
+
+      {/* Infinite Scroll Loader for visual feedback */}
       {allProperties.length > 0 && (
-        <div ref={loadMoreRef} className="text-center mt-12 py-8">
+        <div className="text-center mt-8 py-4">
           {isFetching && filters.page! > 1 && (
             <div className="flex items-center justify-center gap-3">
               <Loader2 className="h-5 w-5 animate-spin text-primary" />

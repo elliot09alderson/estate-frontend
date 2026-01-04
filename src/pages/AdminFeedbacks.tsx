@@ -180,7 +180,7 @@ const AdminFeedbacks = () => {
                 >
                   <div className="mb-3">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-semibold">{feedback.subject}</h4>
+                      <h4 className="font-semibold break-words">{feedback.subject}</h4>
                       <Badge variant={getStatusVariant(feedback.status)} className="flex items-center gap-1">
                         {getStatusIcon(feedback.status)}
                         {feedback.status}
@@ -189,7 +189,7 @@ const AdminFeedbacks = () => {
                     <div className="flex items-center gap-3 text-sm text-muted-foreground">
                       <span>{feedback.userName}</span>
                       <span>•</span>
-                      <span>{feedback.userEmail}</span>
+                      <span className="break-all">{feedback.userEmail}</span>
                       {feedback.rating && (
                         <>
                           <span>•</span>
@@ -202,12 +202,12 @@ const AdminFeedbacks = () => {
                     </div>
                   </div>
 
-                  <p className="text-sm mb-3">{feedback.message}</p>
+                  <p className="text-sm mb-3 break-words">{feedback.message}</p>
 
                   {feedback.adminResponse && (
                     <div className="bg-primary/5 border-l-4 border-primary p-3 rounded mb-3">
                       <p className="text-xs font-semibold text-primary mb-1">Admin Response:</p>
-                      <p className="text-sm">{feedback.adminResponse}</p>
+                      <p className="text-sm break-words">{feedback.adminResponse}</p>
                     </div>
                   )}
 

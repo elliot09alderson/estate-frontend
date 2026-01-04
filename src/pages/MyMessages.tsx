@@ -313,7 +313,7 @@ const MyMessages = () => {
                       <div className="flex items-start justify-between gap-4 mb-2">
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-semibold text-foreground truncate">
+                            <h3 className="font-semibold text-foreground truncate max-w-[200px]">
                               {message.senderName}
                             </h3>
                             {!message.isRead && (
@@ -425,19 +425,19 @@ const MyMessages = () => {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-lg">{selectedMessage.senderName}</h3>
+                  <h3 className="font-semibold text-lg break-words">{selectedMessage.senderName}</h3>
                   <div className="flex flex-col gap-1 mt-1">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Mail className="w-4 h-4" />
-                      <span>{selectedMessage.senderEmail}</span>
+                      <Mail className="w-4 h-4 flex-shrink-0" />
+                      <span className="break-all">{selectedMessage.senderEmail}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Phone className="w-4 h-4" />
-                      <span>{selectedMessage.senderPhone}</span>
+                      <Phone className="w-4 h-4 flex-shrink-0" />
+                      <span className="break-all">{selectedMessage.senderPhone}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock className="w-4 h-4" />
-                      <span>{format(new Date(selectedMessage.createdAt), 'PPPp')}</span>
+                      <Clock className="w-4 h-4 flex-shrink-0" />
+                      <span className="break-words">{format(new Date(selectedMessage.createdAt), 'PPPp')}</span>
                     </div>
                   </div>
                 </div>
@@ -449,14 +449,14 @@ const MyMessages = () => {
                   <Building className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-muted-foreground">Property Inquiry</span>
                 </div>
-                <p className="font-medium">{selectedMessage.propertyTitle}</p>
+                <p className="font-medium break-words">{selectedMessage.propertyTitle}</p>
               </div>
 
               {/* Message */}
               <div>
                 <h4 className="font-medium mb-3">Message</h4>
                 <div className="bg-muted/30 p-4 rounded-lg border-l-4 border-l-primary/50">
-                  <p className="whitespace-pre-wrap break-words leading-relaxed">{selectedMessage.message}</p>
+                  <p className="whitespace-pre-wrap break-all leading-relaxed text-sm sm:text-base">{selectedMessage.message}</p>
                 </div>
               </div>
 

@@ -61,9 +61,10 @@ const RatingModal: React.FC<RatingModalProps> = ({
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('auth_token');  // Changed from 'token' to 'auth_token'
+      const token = localStorage.getItem('auth_token');
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/ratings`,
+        `${baseUrl}/ratings`,
         {
           propertyId,
           rating,
@@ -104,7 +105,7 @@ const RatingModal: React.FC<RatingModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>
             {existingRating > 0 ? 'Update Your Rating' : 'Rate This Property'}

@@ -72,7 +72,7 @@ const AdminDashboard = () => {
   const { data: stats, isLoading: statsLoading } = useGetDashboardStatsQuery();
   const { data: usersData } = useGetUsersQuery({ page: 1, limit: 50 });
   const { data: propertiesData } = useGetAdminPropertiesQuery({ page: 1, limit: 50 });
-  const { data: pendingData } = useGetPendingPropertiesQuery();
+  const { data: pendingData } = useGetPendingPropertiesQuery({});
 
   const [approveProperty] = useApprovePropertyMutation();
   const [rejectProperty] = useRejectPropertyMutation();
@@ -317,10 +317,10 @@ const AdminDashboard = () => {
             <Button
               variant={activeTab === 'overview' ? 'default' : 'ghost'}
               onClick={() => setActiveTab('overview')}
-              className={`w-full px-3 lg:px-6 py-3 text-xs lg:text-sm font-medium transition-all duration-200 ${
+              className={`w-full px-3 lg:px-6 py-3 text-xs lg:text-sm font-medium transition-all duration-500 ${
                 activeTab === 'overview'
-                  ? 'bg-primary text-primary-foreground shadow-lg'
-                  : 'hover:bg-secondary/50'
+                  ? 'bg-primary text-primary-foreground shadow-lg hover:brightness-110 hover:scale-[1.01]'
+                  : 'hover:bg-primary/10 hover:text-primary'
               }`}
               size="sm"
             >
@@ -330,10 +330,10 @@ const AdminDashboard = () => {
             <Button
               variant={activeTab === 'pending' ? 'default' : 'ghost'}
               onClick={() => setActiveTab('pending')}
-              className={`w-full px-3 lg:px-6 py-3 relative text-xs lg:text-sm font-medium transition-all duration-200 ${
+              className={`w-full px-3 lg:px-6 py-3 relative text-xs lg:text-sm font-medium transition-all duration-500 ${
                 activeTab === 'pending'
-                  ? 'bg-primary text-primary-foreground shadow-lg'
-                  : 'hover:bg-secondary/50'
+                  ? 'bg-primary text-primary-foreground shadow-lg hover:brightness-110 hover:scale-[1.01]'
+                  : 'hover:bg-primary/10 hover:text-primary'
               }`}
               size="sm"
             >
@@ -346,10 +346,10 @@ const AdminDashboard = () => {
             <Button
               variant={activeTab === 'properties' ? 'default' : 'ghost'}
               onClick={() => setActiveTab('properties')}
-              className={`w-full px-3 lg:px-6 py-3 text-xs lg:text-sm font-medium transition-all duration-200 ${
+              className={`w-full px-3 lg:px-6 py-3 text-xs lg:text-sm font-medium transition-all duration-500 ${
                 activeTab === 'properties'
-                  ? 'bg-primary text-primary-foreground shadow-lg'
-                  : 'hover:bg-secondary/50'
+                  ? 'bg-primary text-primary-foreground shadow-lg hover:brightness-110 hover:scale-[1.01]'
+                  : 'hover:bg-primary/10 hover:text-primary'
               }`}
               size="sm"
             >
@@ -359,10 +359,10 @@ const AdminDashboard = () => {
             <Button
               variant={activeTab === 'users' ? 'default' : 'ghost'}
               onClick={() => setActiveTab('users')}
-              className={`w-full px-3 lg:px-6 py-3 text-xs lg:text-sm font-medium transition-all duration-200 ${
+              className={`w-full px-3 lg:px-6 py-3 text-xs lg:text-sm font-medium transition-all duration-500 ${
                 activeTab === 'users'
-                  ? 'bg-primary text-primary-foreground shadow-lg'
-                  : 'hover:bg-secondary/50'
+                  ? 'bg-primary text-primary-foreground shadow-lg hover:brightness-110 hover:scale-[1.01]'
+                  : 'hover:bg-primary/10 hover:text-primary'
               }`}
               size="sm"
             >

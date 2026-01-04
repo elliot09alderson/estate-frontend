@@ -122,7 +122,7 @@ const ScheduleTourModal: React.FC<ScheduleTourModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Schedule Property Tour</DialogTitle>
           <DialogDescription>
@@ -173,7 +173,7 @@ const ScheduleTourModal: React.FC<ScheduleTourModalProps> = ({
               <MobileSelect
                 options={timeSlots.map(slot => ({ value: slot, label: slot }))}
                 value={formData.time}
-                onChange={(value) => setFormData({ ...formData, time: value })}
+                onValueChange={(value) => setFormData({ ...formData, time: value })}
                 placeholder="Select time"
                 label="Tour Time"
               />

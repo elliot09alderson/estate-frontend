@@ -22,6 +22,7 @@ import {
   Ruler,
   IndianRupee,
   ShoppingCart,
+  TrendingUp,
   Key,
   Wifi,
   Car,
@@ -36,13 +37,32 @@ import {
   Gamepad2,
   Coffee,
   Utensils,
-  Droplets
+  Droplets,
+  Sprout,
+  Navigation,
+  Milestone,
+  Tv,
+  GraduationCap,
+  PlusCircle,
+  Warehouse,
+  Wind as AirVent,
+  Trash2,
+  Construction,
+  Fence,
+  Layers,
+  LocateFixed,
+  LayoutDashboard,
+  Compass,
+  ShieldCheck,
+  FileCheck,
+  Truck,
+  AlertTriangle,
+  Route
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import FeedbackForm from '@/components/FeedbackForm';
 import ContactModal from '@/components/ContactModal';
 import ScheduleTourModal from '@/components/ScheduleTourModal';
 import StarRating from '@/components/StarRating';
@@ -51,27 +71,77 @@ import ImageZoomModal from '@/components/ImageZoomModal';
 import { useGetPropertyByIdQuery, useToggleFavoriteMutation } from '@/store/api-new';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import axios from 'axios';
 import { formatPriceWithWords } from '@/lib/priceFormatter';
 
 // Amenity icon mapping
 const getAmenityIcon = (feature: string) => {
   const featureLower = feature.toLowerCase();
 
-  if (featureLower.includes('wifi') || featureLower.includes('internet')) return Wifi;
-  if (featureLower.includes('parking') || featureLower.includes('garage')) return Car;
-  if (featureLower.includes('gym') || featureLower.includes('fitness')) return Dumbbell;
+  // Water & Plumbing
+  if (featureLower.includes('water') || featureLower.includes('plumbing')) return Droplets;
+  
+  // Electricity & Power
+  if (featureLower.includes('electricity') || featureLower.includes('power') || featureLower.includes('backup') || featureLower.includes('generator') || featureLower.includes('zap')) return Zap;
+  
+  // Roads & Access
+  if (featureLower.includes('road') || featureLower.includes('access') || featureLower.includes('highway') || featureLower.includes('connectivity')) return Navigation;
+  
+  // Land & Agriculture
+  if (featureLower.includes('agricultural') || featureLower.includes('farm') || featureLower.includes('sprout') || featureLower.includes('soil')) return Sprout;
+  if (featureLower.includes('garden') || featureLower.includes('lawn') || featureLower.includes('park') || featureLower.includes('greenery')) return TreePine;
+  
+  // Connectivity & Entertainment
+  if (featureLower.includes('wifi') || featureLower.includes('internet') || featureLower.includes('broadband')) return Wifi;
+  if (featureLower.includes('tv') || featureLower.includes('cable') || featureLower.includes('satellite')) return Tv;
+  
+  // Security
+  if (featureLower.includes('security') || featureLower.includes('guard') || featureLower.includes('shield')) return Shield;
+  if (featureLower.includes('cctv') || featureLower.includes('camera') || featureLower.includes('surveillance')) return Camera;
+  
+  // Climate Control
+  if (featureLower.includes('heating') || featureLower.includes('geyser') || featureLower.includes('furnace')) return Flame;
+  if (featureLower.includes('ac') || featureLower.includes('air conditioning') || featureLower.includes('cooling')) return AirVent;
+  
+  // Facilities
+  if (featureLower.includes('gym') || featureLower.includes('fitness') || featureLower.includes('workout')) return Dumbbell;
   if (featureLower.includes('pool') || featureLower.includes('swimming')) return Waves;
-  if (featureLower.includes('security') || featureLower.includes('guard')) return Shield;
-  if (featureLower.includes('power') || featureLower.includes('backup') || featureLower.includes('generator')) return Zap;
-  if (featureLower.includes('ac') || featureLower.includes('air condition')) return Wind;
-  if (featureLower.includes('heating') || featureLower.includes('furnace')) return Flame;
-  if (featureLower.includes('cctv') || featureLower.includes('camera')) return Camera;
-  if (featureLower.includes('community') || featureLower.includes('clubhouse')) return Users;
-  if (featureLower.includes('game') || featureLower.includes('play')) return Gamepad2;
+  if (featureLower.includes('parking') || featureLower.includes('garage') || featureLower.includes('basement')) return Car;
+  if (featureLower.includes('maintenance') || featureLower.includes('trash') || featureLower.includes('waste')) return Trash2;
+  if (featureLower.includes('lift') || featureLower.includes('elevator')) return Building;
+  
+  // Social & Family
+  if (featureLower.includes('community') || featureLower.includes('clubhouse') || featureLower.includes('hall')) return Users;
+  if (featureLower.includes('game') || featureLower.includes('play') || featureLower.includes('kids')) return Gamepad2;
   if (featureLower.includes('balcony') || featureLower.includes('terrace')) return Home;
   if (featureLower.includes('kitchen') || featureLower.includes('modular')) return Utensils;
-  if (featureLower.includes('laundry') || featureLower.includes('washing')) return Droplets;
   if (featureLower.includes('cafe') || featureLower.includes('coffee')) return Coffee;
+  
+  // Infrastructure
+  if (featureLower.includes('school') || featureLower.includes('education')) return GraduationCap;
+  if (featureLower.includes('hospital') || featureLower.includes('medical') || featureLower.includes('healthcare')) return PlusCircle;
+  if (featureLower.includes('industrial') || featureLower.includes('warehouse') || featureLower.includes('storage')) return Warehouse;
+  if (featureLower.includes('construction') || featureLower.includes('boundary') || featureLower.includes('fenced') || featureLower.includes('fence')) return Fence;
+  if (featureLower.includes('road') || featureLower.includes('highway') || featureLower.includes('connectivity') || featureLower.includes('access')) return Route;
+
+  // Zones & Plot Types
+  if (featureLower.includes('commercial') || featureLower.includes('business') || featureLower.includes('office') || featureLower.includes('shop')) return Store;
+  if (featureLower.includes('residential') || featureLower.includes('house') || featureLower.includes('flat') || featureLower.includes('villa')) return Home;
+  if (featureLower.includes('corner plot') || featureLower.includes('corner')) return MapPin;
+  if (featureLower.includes('prime location') || featureLower.includes('main road')) return MapPin;
+  if (featureLower.includes('clear title') || featureLower.includes('paperwork') || featureLower.includes('verified')) return FileCheck;
+  if (featureLower.includes('loading') || featureLower.includes('dock') || featureLower.includes('truck')) return Truck;
+  if (featureLower.includes('fire safety') || featureLower.includes('alert') || featureLower.includes('emergency')) return AlertTriangle;
+  if (featureLower.includes('washroom') || featureLower.includes('toilet') || featureLower.includes('bathroom')) return Bath;
+  if (featureLower.includes('high ceiling') || featureLower.includes('frontage') || featureLower.includes('wide')) return TrendingUp;
+  if (featureLower.includes('mezzanine') || featureLower.includes('floor')) return Layers;
+  if (featureLower.includes('facing') || featureLower.includes('north') || featureLower.includes('south') || featureLower.includes('east') || featureLower.includes('west')) return Compass;
+  if (featureLower.includes('vastu') || featureLower.includes('compliant')) return ShieldCheck;
+  if (featureLower.includes('gated') || featureLower.includes('community')) return Shield;
+  
+  // Land & Agriculture
+  if (featureLower.includes('agricultural') || featureLower.includes('farm') || featureLower.includes('sprout') || featureLower.includes('soil') || featureLower.includes('leaf')) return Sprout;
+  if (featureLower.includes('garden') || featureLower.includes('lawn') || featureLower.includes('park') || featureLower.includes('greenery')) return TreePine;
 
   // Default icon
   return Check;
@@ -83,10 +153,10 @@ const PropertyDetails = () => {
   const navigate = useNavigate();
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [scheduleTourModalOpen, setScheduleTourModalOpen] = useState(false);
-  const [ratingModalOpen, setRatingModalOpen] = useState(false);
-  const [userRating, setUserRating] = useState<{rating: number, review: string} | null>(null);
-  const [imageZoomOpen, setImageZoomOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [userRating, setUserRating] = useState<any>(null);
+  const [imageZoomOpen, setImageZoomOpen] = useState(false);
 
   // Scroll to top when component mounts or property ID changes
   useEffect(() => {
@@ -113,6 +183,32 @@ const PropertyDetails = () => {
       toast.error('Failed to update favorite');
     }
   };
+
+
+  // Check if user has already rated
+  useEffect(() => {
+    const checkUserRating = async () => {
+      if (user && id) {
+        try {
+          const token = localStorage.getItem('auth_token');
+          const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+          const response = await axios.get(
+            `${baseUrl}/ratings/property/${id}/user`,
+            {
+              headers: { Authorization: `Bearer ${token}` }
+            }
+          );
+          if (response.data.success) {
+            setUserRating(response.data.data);
+          }
+        } catch (error) {
+          console.error('Error fetching user rating:', error);
+        }
+      }
+    };
+
+    checkUserRating();
+  }, [user, id]);
 
   const handleShare = async () => {
     const property = propertyData?.data;
@@ -177,6 +273,88 @@ const PropertyDetails = () => {
     ? property.agentId.email
     : property.agentPhone;
 
+  const AgentCard = ({ className = "" }: { className?: string }) => (
+    <Card className={`p-6 ${className}`}>
+      <h3 className="text-lg font-semibold mb-4">Contact Agent</h3>
+      
+      <div className="flex items-center mb-4">
+        <Avatar className="w-12 h-12 mr-3">
+          <AvatarImage src={typeof property.agentId === 'object' ? property.agentId.avatar : undefined} alt={property.agentName} />
+          <AvatarFallback>{property.agentName?.charAt(0) || 'A'}</AvatarFallback>
+        </Avatar>
+        <div>
+          <h4 className="font-medium">{property.agentName}</h4>
+          <StarRating
+              rating={(typeof property.agentId === 'object' ? property.agentId.averageRating : property.averageRating) || 0}
+              totalRatings={(typeof property.agentId === 'object' ? property.agentId.totalRatings : property.totalRatings) || 0}
+              size="sm"
+              showCount={true}
+              className="mt-1"
+            />
+          <p className="text-sm text-muted-foreground mt-1">
+            Real Estate Agent
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-3 mb-6">
+        <div className="flex items-center">
+          <Phone className="w-4 h-4 mr-3 text-muted-foreground" />
+          <span className="text-sm">{agentPhone}</span>
+        </div>
+        <div className="flex items-center">
+          <Mail className="w-4 h-4 mr-3 text-muted-foreground" />
+          <span className="text-sm">{agentEmail}</span>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <Button className="btn-gradient-primary w-full" asChild>
+          <a href={`tel:${agentPhone}`}>
+            <Phone className="w-4 h-4 mr-2" />
+            Call Agent
+          </a>
+        </Button>
+        <Button 
+          variant="outline" 
+          className="w-full hover:bg-primary hover:text-primary-foreground transition-all duration-300" 
+          onClick={() => setContactModalOpen(true)}
+        >
+          <Mail className="w-4 h-4 mr-2" />
+          Send Message
+        </Button>
+        <Button
+          variant="outline"
+          className="w-full hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+          onClick={() => {
+            if (user) {
+              setScheduleTourModalOpen(true);
+            } else {
+              navigate('/login', { state: { from: `/properties/${id}` } });
+            }
+          }}
+        >
+        <Calendar className="w-4 h-4 mr-2" />
+        Schedule Tour
+        </Button>
+        <Button
+          variant="outline"
+          className="w-full hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+          onClick={() => {
+            if (user) {
+              setRatingModalOpen(true);
+            } else {
+              navigate('/login', { state: { from: `/properties/${id}` } });
+            }
+          }}
+        >
+          <Star className="w-4 h-4 mr-2" />
+          {userRating ? 'Update Rating' : 'Rate Agent'}
+        </Button>
+      </div>
+    </Card>
+  );
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Image Gallery */}
@@ -186,7 +364,7 @@ const PropertyDetails = () => {
             <img
               src={property.images[0]}
               alt={property.title}
-              className="w-full h-96 lg:h-[500px] object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
+              className="w-full h-64 md:h-80 lg:h-[500px] object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
               onClick={() => {
                 setSelectedImageIndex(0);
                 setImageZoomOpen(true);
@@ -216,40 +394,42 @@ const PropertyDetails = () => {
               </div>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            {property.images.slice(1, 5).map((image, index) => (
-              <div
-                key={index}
-                className="relative group cursor-pointer"
-                onClick={() => {
-                  setSelectedImageIndex(index + 1);
-                  setImageZoomOpen(true);
-                }}
-              >
-                <img
-                  src={image}
-                  alt={`Property ${index + 2}`}
-                  className="w-full h-[240px] lg:h-[240px] object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
-                />
-                {/* Zoom indicator */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 rounded-lg flex items-center justify-center">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/20 backdrop-blur-sm rounded-full p-2">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+          {property.images.length > 1 && (
+            <div className="grid grid-cols-2 gap-4">
+              {property.images.slice(1, 5).map((image, index) => (
+                <div
+                  key={index}
+                  className="relative group cursor-pointer"
+                  onClick={() => {
+                    setSelectedImageIndex(index + 1);
+                    setImageZoomOpen(true);
+                  }}
+                >
+                  <img
+                    src={image}
+                    alt={`Property ${index + 2}`}
+                    className="w-full h-32 md:h-40 lg:h-[240px] object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
+                  />
+                  {/* Zoom indicator */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 rounded-lg flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/20 backdrop-blur-sm rounded-full p-2">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
                   </div>
+                  {/* Show remaining images count on last image */}
+                  {index === 3 && property.images.length > 5 && (
+                    <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
+                      <span className="text-white text-lg font-semibold">
+                        +{property.images.length - 5} more
+                      </span>
+                    </div>
+                  )}
                 </div>
-                {/* Show remaining images count on last image */}
-                {index === 3 && property.images.length > 5 && (
-                  <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
-                    <span className="text-white text-lg font-semibold">
-                      +{property.images.length - 5} more
-                    </span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -260,21 +440,14 @@ const PropertyDetails = () => {
           <div className="mb-6">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h1 className="text-3xl font-bold mb-2">{property.title}</h1>
+                <h1 className="text-2xl lg:text-3xl font-bold mb-2">{property.title}</h1>
 
                 {/* Star Rating */}
-                <div className="mb-3">
-                  <StarRating
-                    rating={property.averageRating || 0}
-                    totalRatings={property.totalRatings || 0}
-                    size="md"
-                    showCount={true}
-                  />
-                </div>
+
 
                 <div className="flex items-center text-muted-foreground mb-2">
-                  <MapPin className="w-4 h-4 mr-2" />
-                  {property.address}
+                  <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="text-sm">{property.address}</span>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
@@ -302,8 +475,8 @@ const PropertyDetails = () => {
 
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2 text-3xl font-bold text-primary">
-                  <IndianRupee className="w-7 h-7" />
+                <div className="flex items-center gap-2 text-2xl lg:text-3xl font-bold text-primary">
+                  <IndianRupee className="w-6 h-6 lg:w-7 lg:h-7" />
                   {formatPriceWithWords(property.price).formatted.replace('₹', '')}
                 </div>
                 <span className="text-sm text-muted-foreground ml-9">
@@ -350,6 +523,11 @@ const PropertyDetails = () => {
               {property.description}
             </p>
           </Card>
+
+          {/* Agent Card (Mobile only) */}
+          <div className="lg:hidden mb-6">
+            <AgentCard />
+          </div>
 
           {/* Features */}
           <Card className="p-6 mb-6">
@@ -408,123 +586,53 @@ const PropertyDetails = () => {
             </div>
           </Card>
 
-          {/* Feedback Form */}
-          <FeedbackForm
-            propertyId={id}
-            onSuccess={() => {
-              // Refresh property data to get updated ratings
-              window.location.reload();
-            }}
-          />
         </div>
 
-        {/* Sidebar */}
-        <div className="lg:col-span-1">
-          {/* Agent Card */}
-          <Card className="p-6 mb-6 sticky top-24">
-            <h3 className="text-lg font-semibold mb-4">Contact Agent</h3>
-            
-            <div className="flex items-center mb-4">
-              <Avatar className="w-12 h-12 mr-3">
-                <AvatarImage src={property.agentId?.avatar} alt={property.agentName} />
-                <AvatarFallback>{property.agentName?.charAt(0) || 'A'}</AvatarFallback>
-              </Avatar>
-              <div>
-                <h4 className="font-medium">{property.agentName}</h4>
-                <p className="text-sm text-muted-foreground">
-                  Real Estate Agent
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center">
-                <Phone className="w-4 h-4 mr-3 text-muted-foreground" />
-                <span className="text-sm">{agentPhone}</span>
-              </div>
-              <div className="flex items-center">
-                <Mail className="w-4 h-4 mr-3 text-muted-foreground" />
-                <span className="text-sm">{agentEmail}</span>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <Button className="btn-gradient-primary w-full" asChild>
-                <a href={`tel:${agentPhone}`}>
-                  <Phone className="w-4 h-4 mr-2" />
-                  Call Agent
-                </a>
-              </Button>
-              <Button variant="outline" className="w-full" onClick={() => setContactModalOpen(true)}>
-                <Mail className="w-4 h-4 mr-2" />
-                Send Message
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => {
-                  if (user) {
-                    setScheduleTourModalOpen(true);
-                  } else {
-                    navigate('/login', { state: { from: `/properties/${id}` } });
-                  }
-                }}
-              >
-                <Calendar className="w-4 h-4 mr-2" />
-                Schedule Tour
-              </Button>
-              {user && (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setRatingModalOpen(true)}
-                >
-                  <Star className="w-4 h-4 mr-2" />
-                  {userRating ? 'Update Rating' : 'Rate Property'}
-                </Button>
-              )}
-            </div>
-          </Card>
-
-          <ContactModal
-            open={contactModalOpen}
-            onClose={() => setContactModalOpen(false)}
-            agentName={property.agentName}
-            agentEmail={agentEmail}
-            propertyTitle={property.title}
-            propertyId={property._id}
-          />
-
-          <ScheduleTourModal
-            open={scheduleTourModalOpen}
-            onClose={() => setScheduleTourModalOpen(false)}
-            propertyId={property._id}
-            propertyTitle={property.title}
-            agentName={property.agentName}
-          />
-
-          <RatingModal
-            open={ratingModalOpen}
-            onClose={() => setRatingModalOpen(false)}
-            propertyId={property._id}
-            propertyTitle={property.title}
-            existingRating={userRating?.rating || 0}
-            existingReview={userRating?.review || ''}
-            onRatingSubmitted={() => {
-              // Refresh property data to get updated rating
-              window.location.reload();
-            }}
-          />
-
-          {/* Image Zoom Modal */}
-          <ImageZoomModal
-            isOpen={imageZoomOpen}
-            onClose={() => setImageZoomOpen(false)}
-            images={property.images}
-            initialIndex={selectedImageIndex}
-            propertyTitle={property.title}
-          />
+        {/* Sidebar (Desktop only) */}
+        <div className="hidden lg:block lg:col-span-1">
+          <AgentCard className="mb-6 sticky top-24" />
         </div>
+
+        <ContactModal
+          open={contactModalOpen}
+          onClose={() => setContactModalOpen(false)}
+          agentName={property.agentName}
+          agentEmail={agentEmail}
+          propertyTitle={property.title}
+          propertyId={property._id}
+        />
+
+        <ScheduleTourModal
+          open={scheduleTourModalOpen}
+          onClose={() => setScheduleTourModalOpen(false)}
+          propertyId={property._id}
+          propertyTitle={property.title}
+          agentName={property.agentName}
+        />
+
+
+
+        {/* Image Zoom Modal */}
+        <ImageZoomModal
+          isOpen={imageZoomOpen}
+          onClose={() => setImageZoomOpen(false)}
+          images={property.images}
+          initialIndex={selectedImageIndex}
+          propertyTitle={property.title}
+        />
+
+        <RatingModal
+          open={ratingModalOpen}
+          onClose={() => setRatingModalOpen(false)}
+          propertyId={id!}
+          propertyTitle={property.title}
+          existingRating={userRating?.rating}
+          existingReview={userRating?.review}
+          onRatingSubmitted={() => {
+            // Refresh logic - ideally invalidate tags, but window reload is a simple fallback
+            window.location.reload();
+          }}
+        />
       </div>
     </div>
   );

@@ -277,11 +277,11 @@ const AdminPropertyRequirements = () => {
                       <User className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-base sm:text-lg truncate">{requirement.name}</h3>
+                      <h3 className="font-semibold text-base sm:text-lg truncate max-w-[200px] break-words">{requirement.name}</h3>
                       <div className="space-y-1 sm:space-y-0 sm:flex sm:items-center sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Mail className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                          <span className="truncate">{requirement.email}</span>
+                          <span className="truncate break-all">{requirement.email}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Phone className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
@@ -325,7 +325,7 @@ const AdminPropertyRequirements = () => {
                   {requirement.preferredLocation && (
                     <div className="flex items-center gap-2 min-w-0">
                       <MapPin className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
-                      <span className="text-xs sm:text-sm truncate">{requirement.preferredLocation}</span>
+                      <span className="text-xs sm:text-sm truncate break-words">{requirement.preferredLocation}</span>
                     </div>
                   )}
                   {requirement.createdAt && (
@@ -339,14 +339,14 @@ const AdminPropertyRequirements = () => {
                 {requirement.additionalRequirements && (
                   <div className="mb-4">
                     <p className="text-sm text-muted-foreground mb-1">Additional Requirements:</p>
-                    <p className="text-sm bg-muted p-3 rounded">{requirement.additionalRequirements}</p>
+                    <p className="text-sm bg-muted p-3 rounded break-words">{requirement.additionalRequirements}</p>
                   </div>
                 )}
 
                 {requirement.notes && (
                   <div className="mb-4">
                     <p className="text-sm text-muted-foreground mb-1">Admin Notes:</p>
-                    <p className="text-sm bg-yellow-50 p-3 rounded border-l-4 border-yellow-400">{requirement.notes}</p>
+                    <p className="text-sm bg-yellow-50 p-3 rounded border-l-4 border-yellow-400 break-words">{requirement.notes}</p>
                   </div>
                 )}
 
