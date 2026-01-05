@@ -73,6 +73,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { formatPriceWithWords } from '@/lib/priceFormatter';
+import SEO from '@/components/SEO';
 
 // Amenity icon mapping
 const getAmenityIcon = (feature: string) => {
@@ -357,6 +358,12 @@ const PropertyDetails = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <SEO 
+        title={property.title} 
+        description={property.description?.slice(0, 160) || `Check out this ${property.listingType} property in ${property.location}`}
+        image={property.images?.[0]}
+        type="article"
+      />
       {/* Image Gallery */}
       <div className="mb-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

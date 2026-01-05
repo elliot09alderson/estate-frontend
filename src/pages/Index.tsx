@@ -25,6 +25,7 @@ import propertyRequirementService, {
 } from "@/services/propertyRequirementService";
 import StarRating from "@/components/StarRating";
 import MobileSelect from "@/components/MobileSelect";
+import SEO from "@/components/SEO";
 
 // Mock featured properties
 const featuredProperties = [
@@ -166,8 +167,13 @@ const Index = () => {
     }
   };
 
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background">
+      <SEO 
+        title="Home"
+        description="Welcome to Crimson Bricks - Your trusted partner in finding the perfect property in top locations."
+      />
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 px-4">
         <div className="lg:container mx-auto">

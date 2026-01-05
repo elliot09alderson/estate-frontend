@@ -4,11 +4,14 @@ import { Scale, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
+import SEO from '@/components/SEO';
+
 const Terms = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
+      <SEO title="Terms & Conditions" description="Read our terms and conditions." />
       <div className="max-w-3xl mx-auto">
         <Button
           variant="ghost"

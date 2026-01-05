@@ -7,6 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
+import SEO from '@/components/SEO';
+
 const Contact = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -40,6 +42,7 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
+      <SEO title="Contact Us" description="Get in touch with our team for inquiries, support, or partnership opportunities." />
       <div className="max-w-5xl mx-auto">
         <Button
           variant="ghost"

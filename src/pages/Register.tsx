@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
+import SEO from '@/components/SEO';
+
 const Register = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -64,6 +66,7 @@ const Register = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background flex items-center justify-center p-4">
+      <SEO title="Create Account" description="Join Crimson Bricks to buy, rent, or sell properties effortlessly." />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

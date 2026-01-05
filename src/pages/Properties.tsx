@@ -38,6 +38,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useLocation } from "@/hooks/useLocation";
 import LocationPrompt from "@/components/LocationPrompt";
 import locationService, { LocationData } from "@/services/locationService";
+import SEO from "@/components/SEO";
 
 interface PropertyFilters {
   page?: number;
@@ -539,6 +540,10 @@ const Properties = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <SEO 
+        title="Properties" 
+        description="Browse our wide range of properties including apartments, houses, commercial spaces, and land. Filter by location, price, and amenities."
+      />
       {/* Header */}
       <motion.div
         className="mb-12 text-center"
