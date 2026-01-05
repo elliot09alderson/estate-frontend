@@ -6,6 +6,7 @@ interface StarRatingProps {
   rating: number;
   totalRatings?: number;
   showCount?: boolean;
+  showRating?: boolean;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   interactive?: boolean;
@@ -16,6 +17,7 @@ const StarRating: React.FC<StarRatingProps> = ({
   rating,
   totalRatings = 0,
   showCount = true,
+  showRating = true,
   size = 'md',
   className,
   interactive = false,
@@ -110,9 +112,11 @@ const StarRating: React.FC<StarRatingProps> = ({
       {/* Rating text and count */}
       {!interactive && (
         <div className={cn('flex items-center gap-1', textSizeClasses[size])}>
-          <span className="font-medium text-foreground">
-            {rating > 0 ? rating.toFixed(1) : '0.0'}
-          </span>
+          {showRating && (
+            <span className="font-medium text-foreground">
+              {rating > 0 ? rating.toFixed(1) : '0.0'}
+            </span>
+          )}
           {showCount && totalRatings > 0 && (
             <span className="text-muted-foreground">
               ({totalRatings} {totalRatings === 1 ? 'review' : 'reviews'})

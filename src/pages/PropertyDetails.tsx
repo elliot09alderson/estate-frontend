@@ -245,7 +245,7 @@ const PropertyDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex items-center justify-center min-h-screen">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
@@ -253,7 +253,7 @@ const PropertyDetails = () => {
 
   if (error || !propertyData?.data) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Card className="p-8 text-center">
           <h2 className="text-2xl font-bold mb-2">Property Not Found</h2>
           <p className="text-muted-foreground">The property you're looking for doesn't exist or has been removed.</p>
@@ -356,7 +356,7 @@ const PropertyDetails = () => {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Image Gallery */}
       <div className="mb-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

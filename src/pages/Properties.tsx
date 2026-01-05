@@ -59,6 +59,7 @@ interface PropertyFilters {
 const Properties = () => {
   const [searchParams] = useSearchParams();
   const initialSearch = searchParams.get("search") || "";
+  const initialCategory = searchParams.get("category") || undefined;
 
   // Get cached location for default search term
   const getDefaultSearchTerm = () => {
@@ -102,6 +103,7 @@ const Properties = () => {
   const [filters, setFilters] = useState<PropertyFilters>({
     page: 1,
     limit: 40,
+    category: initialCategory,
     ...(defaultSearchTerm && { location: defaultSearchTerm }),
   });
 
@@ -157,11 +159,15 @@ const Properties = () => {
   // Handle URL search parameter changes
   useEffect(() => {
     const searchQuery = searchParams.get("search");
-    if (searchQuery && searchQuery !== searchTerm) {
-      setSearchTerm(searchQuery);
+    const categoryQuery = searchParams.get("category");
+
+    if (searchQuery !== searchTerm || categoryQuery !== filters.category) {
+      if (searchQuery) setSearchTerm(searchQuery);
+      
       setFilters((prev) => ({
         ...prev,
-        location: searchQuery,
+        ...(searchQuery && { location: searchQuery }),
+        category: categoryQuery || undefined,
         page: 1,
       }));
 
@@ -389,7 +395,7 @@ const Properties = () => {
   // Property Card Component for reuse
   const PropertyCard = ({ property }: { property: any }) => (
     <Link to={`/properties/${property._id}`} className="block h-full">
-      <Card className="overflow-hidden border border-border rounded-2xl hover:shadow-xl transition-all duration-300 group bg-card dark:bg-card h-full flex flex-col">
+      <Card className="overflow-hidden border-0 shadow-lg hover:shadow-2xl rounded-[1.5rem] transition-all duration-500 ease-out hover:-translate-y-2 group bg-card dark:bg-card h-full flex flex-col isolate relative ring-1 ring-black/5 dark:ring-white/10">
         {/* Image Section */}
         <div className="relative h-64 overflow-hidden flex-shrink-0 bg-muted dark:bg-muted/50">
           <img
@@ -447,22 +453,14 @@ const Properties = () => {
         </div>
 
         {/* Content Section */}
-        <div className="flex-1 p-4 flex flex-col">
+        <div className="flex-1 p-5 flex flex-col">
           {/* Title & Location */}
           <div className="mb-3">
             <h3 className="font-bold text-lg mb-1.5 text-foreground line-clamp-1 group-hover:text-primary transition-colors">
               {property.title}
             </h3>
 
-            {/* Star Rating */}
-            <div className="mb-2">
-              <StarRating
-                rating={property.averageRating || 0}
-                totalRatings={property.totalRatings || 0}
-                size="sm"
-                showCount={property.totalRatings > 0}
-              />
-            </div>
+
 
             <div className="flex items-center text-muted-foreground text-sm">
               <MapPin className="w-3.5 h-3.5 mr-1 flex-shrink-0" />
@@ -517,10 +515,14 @@ const Properties = () => {
                   </div>
                 )}
               </div>
-              <div className="text-right">
-                <div className="text-[10px] text-muted-foreground mb-0.5">
-                  Listed by
-                </div>
+              <div className="text-right flex flex-col items-end gap-1">
+                <StarRating
+                  rating={property.averageRating || 0}
+                  totalRatings={property.totalRatings || 0}
+                  size="sm"
+                  showCount={false}
+                  showRating={false}
+                />
                 <div className="text-xs font-semibold text-foreground line-clamp-1">
                   {property.agentName}
                 </div>
@@ -536,7 +538,7 @@ const Properties = () => {
   // This provides natural page scrolling with intersection observer for infinite scroll
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <motion.div
         className="mb-12 text-center"
@@ -794,7 +796,7 @@ const Properties = () => {
       {/* Property Grid - Simple CSS Grid with Infinite Scroll */}
       {/* Using Tailwind responsive classes for column layout */}
       {/* Intersection observer (loadMoreRef) triggers loading more items when user scrolls near bottom */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12 pb-12">
         {allProperties.map((property) => (
           <PropertyCard key={property._id} property={property} />
         ))}

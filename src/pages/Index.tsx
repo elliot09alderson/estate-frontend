@@ -428,10 +428,10 @@ const Index = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { icon: Building, name: "Apartments", count: "125 listings" },
-              { icon: Home, name: "Houses", count: "89 listings" },
-              { icon: Building, name: "Commercial", count: "56 listings" },
-              { icon: TreePine, name: "Land", count: "34 listings" },
+              { icon: Building, name: "Apartments", count: "125 listings", slug: "flat" },
+              { icon: Home, name: "Houses", count: "89 listings", slug: "house" },
+              { icon: Building, name: "Commercial", count: "56 listings", slug: "shop" },
+              { icon: TreePine, name: "Land", count: "34 listings", slug: "land" },
             ].map((category, index) => (
               <motion.div
                 key={category.name}
@@ -440,17 +440,19 @@ const Index = () => {
                 transition={{ delay: index * 0.1, duration: 0.6 }}
                 viewport={{ once: true }}
               >
-                <Card className="card-elevated p-6 text-center group cursor-pointer hover:shadow-[var(--shadow-large)] transition-all duration-300">
-                  <div className="w-12 h-12 btn-gradient-primary rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    <category.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="font-semibold mb-1 group-hover:text-primary transition-colors">
-                    {category.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {category.count}
-                  </p>
-                </Card>
+                <Link to={`/properties?category=${category.slug}`}>
+                  <Card className="card-elevated p-6 text-center group cursor-pointer hover:shadow-[var(--shadow-large)] transition-all duration-300">
+                    <div className="w-12 h-12 btn-gradient-primary rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                      <category.icon className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="font-semibold mb-1 group-hover:text-primary transition-colors">
+                      {category.name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {category.count}
+                    </p>
+                  </Card>
+                </Link>
               </motion.div>
             ))}
           </div>
